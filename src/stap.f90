@@ -157,7 +157,8 @@ PROGRAM STAP90
   CALL MEMALLOC(6,"RG   ",NEQ,ITWO)
   CALL MEMALLOC(11,"ELEGP",MAXEST,1)
 
-
+! 分配质量矩阵内存
+  CALL MEMALLOC(13,"MASS ",NWK,ITWO)
 
 ! Write total system data
 
@@ -183,7 +184,7 @@ PROGRAM STAP90
 
 !    Triangularize stiffness matrix
      CALL COLSOL (DA(NP(3)),DA(NP(4)),IA(NP(2)),NEQ,NWK,NEQ1,1)             !3为刚度阵 4为反力
-
+     
      CALL SECOND (TIM(4))
 
   IND=3    ! Stress calculations

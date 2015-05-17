@@ -1,4 +1,4 @@
-
+! (NOTE: NOT HAVE THE DENSITY FOR THE MASS MATRIX. NOW DENSITY IS EQUAL TO 1)
 SUBROUTINE TRIELMT
 ! . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 ! .                                                                   .
@@ -75,7 +75,7 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
     real(8), parameter :: pi = 3.1415926535D0
     real(8) :: DD, FF, GG, HH
     real(8) :: XG(4,4), WGT(4,4)
-    real(8) :: D(4,4), Be(4,6), Ne(2,6), S(6,6), UE(6), P(4)
+    real(8) :: D(4,4), Be(4,6), Ne(2,6), S(6,6), M(6,6), UE(6), P(4)
     real(8) :: detJ, rr, ri, si
     integer :: ITYPE, IST
     integer :: JJ, lx, ly
@@ -218,6 +218,7 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
 
 !           Calculate element stiffness
             S = 0.
+            M = 0.
             JJ = 0
             IF (ITYPE == 0) THEN    !Axisymmetric
                 DO lx = 1, nint
@@ -230,9 +231,9 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
                         call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
                         S = S + WGT(lx,nint) * WGT(ly,nint) * 2 * pi * rr * &
                                 matmul(transpose(Be),matmul(D,Be)) * detJ
-!!                       The mass matrix
-!                        M = M + WGT(lx,nint) * WGT(ly,nint) * 2 * pi * rr * &
-!                                matmul(transpose(Ne),Ne) * detJ
+!                       The mass matrix (NOTE: NOT HAVE THE DENSITY)
+                        M = M + WGT(lx,nint) * WGT(ly,nint) * 2 * pi * rr * &
+                                matmul(transpose(Ne),Ne) * detJ
                     END DO
                 END DO
             ELSE
@@ -246,11 +247,15 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
                         call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
                         S = S + WGT(lx,nint) * WGT(ly,nint) * &
                                 matmul(transpose(Be(1:3,1:6)),matmul(D(1:3,1:3),Be(1:3,1:6))) * detJ
+!                       The mass matrix (NOTE: NOT HAVE THE DENSITY)
+                        M = M + WGT(lx,nint) * WGT(ly,nint) * &
+                                matmul(transpose(Ne),Ne) * detJ
                     END DO
                 END DO
             END IF
             
             CALL ADDBAN (DA(NP(3)),IA(NP(2)),S,LM(1,N),ND)
+            CALL ADDBAN (DA(NP(13)),IA(NP(2)),M,LM(1,N),ND)
             
         END DO
         
@@ -291,7 +296,7 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
     !                   evaluate derivative operator B and the Jacobian determinant detJ
                         call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
                         P = matmul(D,matmul(Be,UE))
-                        write (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,ri,si,P(1),P(2),P(3), P(4)
+                        write (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,ri,si,P(1),P(2),P(3),P(4)
                     END DO
                 END DO
             ELSE
