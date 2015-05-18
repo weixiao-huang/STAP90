@@ -201,6 +201,9 @@ PROGRAM STAP90
 
 !       Calculation of stresses
         CALL STRESS (A(NP(11)))
+        
+!       Calculation of EIGENVALUES and EIGENVECTORS
+        CALL EIGEN
 
      END DO
 

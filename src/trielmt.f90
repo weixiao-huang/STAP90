@@ -221,37 +221,25 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
             M = 0.
             JJ = 0
             IF (ITYPE == 0) THEN    !Axisymmetric
-                DO lx = 1, nint
-                    ri = xg(lx,nint)
-                    DO ly = 1, nint
-                        si = xg(ly,nint)
-                        jj = jj + 1
-                    
-!                       evaluate derivative operator B and the Jacobian determinant detJ
-                        call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
-                        S = S + WGT(lx,nint) * WGT(ly,nint) * 2 * pi * rr * &
-                                matmul(transpose(Be),matmul(D,Be)) * detJ
-!                       The mass matrix (NOTE: NOT HAVE THE DENSITY)
-                        M = M + WGT(lx,nint) * WGT(ly,nint) * 2 * pi * rr * &
-                                matmul(transpose(Ne),Ne) * detJ
-                    END DO
-                END DO
+                ri = (xy(1,n)+xy(3,n)+xy(5,n)) / 3
+                si = (xy(2,n)+xy(4,n)+xy(6,n)) / 3
+
+!               evaluate derivative operator B and the Jacobian determinant detJ
+                call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
+                S = S + 2 * pi * rr * &
+                        matmul(transpose(Be),matmul(D,Be)) * detJ
+!               The mass matrix (NOTE: NOT HAVE THE DENSITY)
+                M = M + 2 * pi * rr * &
+                        matmul(transpose(Ne),Ne) * detJ
             ELSE
-                DO lx = 1, nint
-                    ri = xg(lx,nint)
-                    DO ly = 1, nint
-                        si = xg(ly,nint)
-                        jj = jj + 1
+                ri = (xy(1,n)+xy(3,n)+xy(5,n)) / 3
+                si = (xy(2,n)+xy(4,n)+xy(6,n)) / 3
                     
-!                       evaluate derivative operator B and the Jacobian determinant detJ
-                        call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
-                        S = S + WGT(lx,nint) * WGT(ly,nint) * &
-                                matmul(transpose(Be(1:3,1:6)),matmul(D(1:3,1:3),Be(1:3,1:6))) * detJ
-!                       The mass matrix (NOTE: NOT HAVE THE DENSITY)
-                        M = M + WGT(lx,nint) * WGT(ly,nint) * &
-                                matmul(transpose(Ne),Ne) * detJ
-                    END DO
-                END DO
+!               evaluate derivative operator B and the Jacobian determinant detJ
+                call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
+                S = S + matmul(transpose(Be(1:3,1:6)),matmul(D(1:3,1:3),Be(1:3,1:6))) * detJ
+!               The mass matrix (NOTE: NOT HAVE THE DENSITY)
+                M = M + matmul(transpose(Ne),Ne) * detJ
             END IF
             
             CALL ADDBAN (DA(NP(3)),IA(NP(2)),S,LM(1,N),ND)
@@ -288,29 +276,21 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
             END DO
         
             IF (ITYPE == 0) THEN    !Axisymmetric
-                DO lx = 1, nint
-                    ri = xg(lx,nint)
-                    DO ly = 1, nint
-                        si = xg(ly,nint)
+                ri = (xy(1,n)+xy(3,n)+xy(5,n)) / 3
+                si = (xy(2,n)+xy(4,n)+xy(6,n)) / 3
                     
-    !                   evaluate derivative operator B and the Jacobian determinant detJ
-                        call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
-                        P = matmul(D,matmul(Be,UE))
-                        write (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,ri,si,P(1),P(2),P(3),P(4)
-                    END DO
-                END DO
+!               evaluate derivative operator B and the Jacobian determinant detJ
+                call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
+                P = matmul(D,matmul(Be,UE))
+                write (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,ri,si,P(1),P(2),P(3),P(4)
             ELSE
-                DO lx = 1, nint
-                    ri = xg(lx,nint)
-                    DO ly = 1, nint
-                        si = xg(ly,nint)
+                ri = (xy(1,n)+xy(3,n)+xy(5,n)) / 3
+                si = (xy(2,n)+xy(4,n)+xy(6,n)) / 3
 
-!                       evaluate derivative operator B and the Jacobian determinant detJ
-                        call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
-                        P(1:3) = matmul(D(1:3,1:3),matmul(Be(1:3,1:6),UE))
-                        write (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,ri,si,P(1),P(2),P(3)
-                    end do
-                end do
+!               evaluate derivative operator B and the Jacobian determinant detJ
+                call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
+                P(1:3) = matmul(D(1:3,1:3),matmul(Be(1:3,1:6),UE))
+                write (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,ri,si,P(1),P(2),P(3)
             END IF
         END DO
     END IF
@@ -336,9 +316,9 @@ subroutine BNmat (xy,ri,si,Be,Ne,detJ,r)
     
     detJ = (xy(3)*xy(6)-xy(5)*xy(4) - xy(1)*xy(6)+xy(5)*xy(2) + xy(1)*xy(4)-xy(3)*xy(2))
     
-    N(1) = (xy(3)*xy(6) - xy(5)*xy(4) + yy(1)*ri - xx(1)*si) / (2 * detJ)
-    N(2) = (xy(5)*xy(2) - xy(1)*xy(6) + yy(2)*ri - xx(2)*si) / (2 * detJ)
-    N(3) = (xy(1)*xy(4) - xy(3)*xy(2) + yy(3)*ri - xx(3)*si) / (2 * detJ)
+    N(1) = (xy(3)*xy(6) - xy(5)*xy(4) + yy(1)*ri - xx(1)*si) / detJ
+    N(2) = (xy(5)*xy(2) - xy(1)*xy(6) + yy(2)*ri - xx(2)*si) / detJ
+    N(3) = (xy(1)*xy(4) - xy(3)*xy(2) + yy(3)*ri - xx(3)*si) / detJ
     
     Ne = 0
     
@@ -363,21 +343,21 @@ subroutine BNmat (xy,ri,si,Be,Ne,detJ,r)
     
     Be(1,1) = yy(1)
     Be(3,1) = -xx(1)
-    Be(4,1) = N(1)/r * 2 * detJ
+    Be(4,1) = N(1)/r * detJ
     
     Be(2,2) = -xx(1)
     Be(3,2) = yy(1)
  
     Be(1,3) = yy(2)
     Be(3,3) = -xx(2)
-    Be(4,3) = N(2)/r * 2 * detJ
+    Be(4,3) = N(2)/r * detJ
     
     Be(2,4) = -xx(2)
     Be(3,4) = yy(2)
     
     Be(1,5) = yy(3)
     Be(3,5) = -xx(3)
-    Be(4,5) = N(3)/r * 2 * detJ
+    Be(4,5) = N(3)/r * detJ
     
     Be(2,6) = -xx(3)
     Be(3,6) = yy(3)
@@ -389,6 +369,6 @@ subroutine BNmat (xy,ri,si,Be,Ne,detJ,r)
     !     yy(3),    0 , -xx(3), N(3)/r, &
     !        0 ,-xx(3),  yy(3),   0   ]
     
-    Be = Be / (2*detJ)
+    Be = Be / detJ
     
 end subroutine BNmat

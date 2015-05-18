@@ -67,7 +67,7 @@ SUBROUTINE late(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
   
   INTEGER :: NPAR1, NUME, NUMMAT, ND,P1,P2,P3,P4, L, N, I,J
   INTEGER :: MTYPE, IPRINT 
-  REAL(8) ::  XM, XX, YY, STR(4), P(4)
+  REAL(8) ::  XM, XX, YY, STR(4), P(4) ,wcxy(3),VMxy(3)
   REAL(8) :: GP(2), WGT(2),B(3,12),detJ,NL(2,8)
   REAL(8),parameter:: pi=3.141592654
   !GP =[-0.9061798459, -0.5384693101 ,0.0 ,0.5384693101,0.9061798459]                          !五点GAUSS积分
@@ -193,16 +193,10 @@ SUBROUTINE late(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
      enddo
   enddo  
 
-  do i=1,2                                                      
-     do j=1,2
-      CAll BSmat_plate(gp(i),gp(j),XYZ(1,N),BS,detJ)
-      
-    
-      
-    S=S+WGT(i)*WGT(j)*matmul(transpose(BS),BS)*detJ*alpha 
+!采用减缩积分
+      CAll BSmat_plate(0,0,XYZ(1,N),BS,detJ)      
+    S=S+matmul(transpose(BS),BS)*detJ*alpha 
 
-     enddo
-  enddo  
   
 
   
@@ -237,7 +231,7 @@ SUBROUTINE late(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
                IF (J.GT.0)then
                   UE(2*L)=U(J)
                  else
-                 UE(2*L-1)=0
+                 UE(2*L)=0
            endif
     END DO
         

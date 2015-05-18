@@ -67,7 +67,7 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
   
   INTEGER :: NPAR1, NUME, NUMMAT, ND,P1,P2,P3,P4, L, N, I,J
   INTEGER :: MTYPE, IPRINT 
-  REAL(8) ::  XM, XX, YY, STR(4), P(4)
+  REAL(8) ::  XM, XX, YY, STR4q(3), P4q(3),wcxy(3),VMxy(3)
   REAL(8) :: GP(2), WGT(2),B(3,20),detJ,NL(2,8)
   REAL(8),parameter:: pi=3.141592654
   !GP =[-0.9061798459, -0.5384693101 ,0.0 ,0.5384693101,0.9061798459]                          !五点GAUSS积分
@@ -186,23 +186,19 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
    
   do i=1,2                                                      
      do j=1,2
-      CAll BBmat_plate(gp(i),gp(j),XYZ(1,N),B,detJ)
+      CAll BBmat_shell(gp(i),gp(j),XYZ(1,N),B,detJ)
       
     S=S+WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ*THICK(MTYPE)**3/12.0  
 
      enddo
   enddo  
 
-  do i=1,2                                                      
-     do j=1,2
-      CAll BSmat_plate(gp(i),gp(j),XYZ(1,N),BS,detJ)
-      
-    
-      
-    S=S+WGT(i)*WGT(j)*matmul(transpose(BS),BS)*detJ*alpha 
+  !采用减缩积分
 
-     enddo
-  enddo  
+      CAll BSmat_shell(0,0,XYZ(1,N),BS,detJ)
+      
+    S=S+matmul(transpose(BS),BS)*detJ*alpha 
+
   
  do i=1,2                                                      
      do j=1,2
@@ -233,19 +229,16 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
                                            '  ELEMENT',5X,'GAUSS POINT',5X,'StressXX',5X,'StressYY',5X,'StressXY',/,&
                                           '  NUMBER')") NG
         MTYPE=MATP(N)
-     DO L=1,4    
-           I=LM(2*L-1,N)
+     DO L=1,4  
+         
+       Do J=1,5
+           I=LM(5*L-J+1,N)
            IF (I.GT.0)then
-            UE(2*L-1)=U(I)
+            UE(5*L-J+1)=U(I)
            else
-            UE(2*L-1)=0
-           endif       
-           J=LM(2*L,N)
-               IF (J.GT.0)then
-                  UE(2*L)=U(J)
-                 else
-                 UE(2*L-1)=0
-           endif
+            UE(5*L-J+1)=0
+           endif 
+        enddo
     END DO
         
         
@@ -254,9 +247,9 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
   
       CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
 
-   !  STR = matmul(B,UE)
-   !  P   = matmul(D,STR)
-        WRITE (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,gp(i),gp(j),P(1),P(2),P(3)
+    STR4q = matmul(B,UE)
+     P4q   = matmul(D,STR4q)
+        WRITE (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,gp(i),gp(j),P4q(1),P4q(2),P4q(3)
      enddo
  enddo
 
@@ -329,7 +322,7 @@ enddo
 enddo
     end subroutine Bmat4q
       
-subroutine BBmat_plate(eta,psi,XY,BB,detJ)
+subroutine BBmat_shell(eta,psi,XY,BB,detJ)
 real*8 :: eta,psi,XY(12),BB(3,20),detJ,GN(2,4),J(2,2),JINV(2,2),DUM
 integer::K2,K,I
 
@@ -373,9 +366,9 @@ enddo
 
  enddo   
 
-end subroutine BBmat_plate
+end subroutine BBmat_shell
     
-subroutine BSmat_plate(eta,psi,XY,BS,detJ)
+subroutine BSmat_shell(eta,psi,XY,BS,detJ)
 real*8 :: eta,psi,XY(12),BS(2,20),detJ,GN(2,4),J(2,2),JINV(2,2),DUM,N(4)
 integer::K2,K,I
 
@@ -424,4 +417,4 @@ enddo
  enddo   
 
 
-end subroutine BSmat_plate
+end subroutine BSmat_shell
