@@ -37,7 +37,7 @@ module GLOBALS
 						!   NPAR(3) - Number of different sets of material and 
 						!             cross-sectional  constants
                         !   NPAR(4) - 0-轴对称问题  1-平面应变  2-平面应力
-                        !   NPAR(5) - 0-子空间迭代法  2-Lanczos法
+                        !   NPAR(5) - 1-子空间迭代法  2-Lanczos法
    integer :: NUMEG		! Total number of element groups, > 0
 
    integer :: MODEX		! Solution mode: 0 - data check only;  1 -  execution  

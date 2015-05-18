@@ -67,7 +67,7 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
   
   INTEGER :: NPAR1, NUME, NUMMAT, ND,P1,P2,P3,P4, L, N, I,J
   INTEGER :: MTYPE, IPRINT 
-  REAL(8) ::  XM, XX, YY, STR4q(3), P4q(3),wcxy(3),VMxy(3)
+  REAL(8) ::  XM, XX, YY, STR4q(3), P4q(3),wcxy(3),mxy(2)
   REAL(8) :: GP(2), WGT(2),B(3,20),detJ,NL(2,8)
   REAL(8),parameter:: pi=3.141592654
   !GP =[-0.9061798459, -0.5384693101 ,0.0 ,0.5384693101,0.9061798459]                          !五点GAUSS积分
@@ -249,7 +249,11 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
 
     STR4q = matmul(B,UE)
      P4q   = matmul(D,STR4q)
-        WRITE (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,gp(i),gp(j),P4q(1),P4q(2),P4q(3)
+     
+     CAll Nmat_shell(0,0,BS)
+     mxy = matmul(BS,UE)*E(MTYPE)*THICK(MTYPE)**3/12.0  
+   
+        WRITE (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6,4X,E13.6,4X,E13.6)")N,gp(i),gp(j),P4q(1),P4q(2),P4q(3),mxy(1),mxy(2)
      enddo
  enddo
 
@@ -262,17 +266,17 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
 END SUBROUTINE hell
 
 
- !subroutine Nmat(eta,psi,N)
-!real*8 ::psi,eta,N(2,8)
-!N(1,1)=0.25*(1-psi)*(1-eta)
-!N(2,2)=0.25*(1-psi)*(1-eta)
-!N(1,3)=0.25*(1+psi)*(1-eta)
-!N(2,4)=0.25*(1+psi)*(1-eta)
-!N(1,5)=0.25*(1+psi)*(1+eta)
-!N(2,6)=0.25*(1+psi)*(1+eta)
-!N(1,7)=0.25*(1-psi)*(1+eta)
-!N(2,8)=0.25*(1-psi)*(1+eta)
-! end subroutine Nmat
+ subroutine Nmat_shell(eta,psi,N)
+real*8 ::psi,eta,N(2,12)
+N(1,2)=0.25*(1-psi)*(1-eta)
+N(2,3)=0.25*(1-psi)*(1-eta)
+N(1,5)=0.25*(1+psi)*(1-eta)
+N(2,6)=0.25*(1+psi)*(1-eta)
+N(1,8)=0.25*(1+psi)*(1+eta)
+N(2,9)=0.25*(1+psi)*(1+eta)
+N(1,11)=0.25*(1-psi)*(1+eta)
+N(2,12)=0.25*(1-psi)*(1+eta)
+ end subroutine Nmat_shell
     
 subroutine Bmat4q(eta,psi,XY,B,detJ)
 real*8 :: eta,psi,XY(12),B(3,20),detJ,GN(2,4),J(2,2),JINV(2,2),DUM
@@ -417,4 +421,5 @@ enddo
  enddo   
 
 
-end subroutine BSmat_shell
+    end subroutine BSmat_shell
+    

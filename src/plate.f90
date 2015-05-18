@@ -67,7 +67,7 @@ SUBROUTINE late(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
   
   INTEGER :: NPAR1, NUME, NUMMAT, ND,P1,P2,P3,P4, L, N, I,J
   INTEGER :: MTYPE, IPRINT 
-  REAL(8) ::  XM, XX, YY, STR(4), P(4) ,wcxy(3),VMxy(3)
+  REAL(8) ::  XM, XX, YY, STR(3), P(3),wcxy(3),mxy(2)
   REAL(8) :: GP(2), WGT(2),B(3,12),detJ,NL(2,8)
   REAL(8),parameter:: pi=3.141592654
   !GP =[-0.9061798459, -0.5384693101 ,0.0 ,0.5384693101,0.9061798459]                          !五点GAUSS积分
@@ -236,16 +236,14 @@ SUBROUTINE late(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
     END DO
         
         
- do i=1,2                                                      
-     do j=1,2  
-  
-      CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
 
-   !  STR = matmul(B,UE)
-   !  P   = matmul(D,STR)
-        WRITE (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,gp(i),gp(j),P(1),P(2),P(3)
-     enddo
- enddo
+  
+
+     CAll Nmat_plate(0,0,BS)
+     mxy = matmul(BS,UE)*E(MTYPE)*THICK(MTYPE)**3/12.0  
+   
+        WRITE (IOUT,"(I5,4X,E13.6,4X,E13.6)")N,mxy(1),mxy(2)
+
 
      END DO
 
@@ -256,17 +254,17 @@ SUBROUTINE late(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
 END SUBROUTINE late
 
 
- !subroutine Nmat(eta,psi,N)
-!real*8 ::psi,eta,N(2,8)
-!N(1,1)=0.25*(1-psi)*(1-eta)
-!N(2,2)=0.25*(1-psi)*(1-eta)
-!N(1,3)=0.25*(1+psi)*(1-eta)
-!N(2,4)=0.25*(1+psi)*(1-eta)
-!N(1,5)=0.25*(1+psi)*(1+eta)
-!N(2,6)=0.25*(1+psi)*(1+eta)
-!N(1,7)=0.25*(1-psi)*(1+eta)
-!N(2,8)=0.25*(1-psi)*(1+eta)
-! end subroutine Nmat
+ subroutine Nmat_plate(eta,psi,N)
+real*8 ::psi,eta,N(2,12)
+N(1,2)=0.25*(1-psi)*(1-eta)
+N(2,3)=0.25*(1-psi)*(1-eta)
+N(1,5)=0.25*(1+psi)*(1-eta)
+N(2,6)=0.25*(1+psi)*(1-eta)
+N(1,8)=0.25*(1+psi)*(1+eta)
+N(2,9)=0.25*(1+psi)*(1+eta)
+N(1,11)=0.25*(1-psi)*(1+eta)
+N(2,12)=0.25*(1-psi)*(1+eta)
+ end subroutine Nmat_plate
     
       
 subroutine BBmat_plate(eta,psi,XY,BB,detJ)
