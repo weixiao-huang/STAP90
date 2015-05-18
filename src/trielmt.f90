@@ -293,6 +293,8 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
                 write (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,ri,si,P(1),P(2),P(3)
             END IF
         END DO
+    ELSE 
+        STOP "*** ERROR *** Invalid IND value."
     END IF
 
 END SUBROUTINE triangle
