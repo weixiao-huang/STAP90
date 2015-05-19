@@ -19,6 +19,7 @@ module GLOBALS
    integer, parameter :: ILOAD=2	! Unit storing load vectors
    integer, parameter :: IIN=5		! Unit used for input
    integer, parameter :: IOUT=6		! Unit used for output
+   integer, parameter :: ITEC=7  	! Unit used for tecplot
 
    integer :: NUMNP		! Total number of nodal points
 						! = 0 : Program stop

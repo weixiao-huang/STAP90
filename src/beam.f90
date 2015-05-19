@@ -133,7 +133,7 @@ SUBROUTINE EAM (ID,X,Y,Z,U,MHT,E,AREA,INERTIAL,LM,XYZ,MATP)
         CALL COLHT (MHT,ND,LM(1,N))   
 
         WRITE (IOUT,"(I5,6X,I5,4X,I5,7X,I5)") N,I,J,MTYPE
-
+        WRITE (10,"(I5,4X,I5)") I,J
         
      END DO
 

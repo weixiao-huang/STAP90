@@ -168,7 +168,7 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
             CALL COLHT (MHT,ND,LM(1,N))   
 
             WRITE (IOUT,"(I5,6X,I5,3(4X,I5),7X,I5)") N,II,MTYPE
-            
+            WRITE (10,"(3(4X,I5))") II
         END DO
 
         RETURN

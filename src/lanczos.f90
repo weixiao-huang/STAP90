@@ -298,7 +298,7 @@
 !
       IF (IFPR.NE.0) THEN
         WRITE (IOUT,1035)
-        WRITE (IOUT,1006) (EIGV(I),I=1,NC)
+        WRITE (IOUT,1006) (EIGV(I),I=1,NROOT)
       END IF
 
     END DO

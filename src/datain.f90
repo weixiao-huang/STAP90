@@ -51,6 +51,7 @@ SUBROUTINE INPUT (ID,X,Y,Z,NUMNP,NEQ)
 
   DO N=1,NUMNP
      WRITE (IOUT,"(I5,6X,<NDF>I5,6X,3F13.3)") N,(ID(I,N),I=1,NDF),X(N),Y(N),Z(N)
+     WRITE (10,"(3F13.3)") X(N),Y(N),Z(N)
   END DO
 
 ! Number unknowns
