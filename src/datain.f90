@@ -116,10 +116,8 @@ SUBROUTINE LOADS (R,NOD,IDIRN,FLOAD,ID,NLOAD,NEQ)
 
   RETURN
   
-    END SUBROUTINE LOADS
-    
-    
-    
+END SUBROUTINE LOADS
+
     
 !subroutine refresh(R,NEQ)
 !.....................................................................
@@ -153,14 +151,12 @@ SUBROUTINE LOADV (R,RG,NEQ)
   READ (ILOAD) R
   
   do i=1,NEQ   
-                                                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       R(i)=R(i)+RG(i) 
-      write(*,'(f14.7)') ,R(i)                                                 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1\!
+!      write(*,'(f14.7)') ,R(i)
   enddo                                             !¿¼ÂÇÖØÁ¦Ó°Ïì
   
  ! rewind(ILOAD)
   !write(ILOAD) R
-
   
   RETURN
 END SUBROUTINE LOADV

@@ -15,7 +15,7 @@ SUBROUTINE TRIELMT
   NUME = NPAR(2)
   NUMMAT = NPAR(3)
 ! ITYPE = NPAR(4)
-! advType = NPAR(5)     ! advanced elements
+! EIGEN = NPAR(5)     ! advanced elements
 
 ! Allocate storage for element group data
   IF (IND == 1) THEN

@@ -22,6 +22,8 @@ PROGRAM STAP90
   REAL :: TT
 
 ! OPEN INPUT DATA FILE, RESULTS OUTPUT FILE AND TEMPORARY FILES
+
+!  CALL PREOPENFILES()                  ! 采用前处理的话就用这个函数不用下面那个，运行时只需要确定运行路径即可！
   CALL OPENFILES()
 
   NUMEST=0

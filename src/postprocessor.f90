@@ -89,10 +89,10 @@ REWIND(10)
         
        READ(10,"(I5,3X,I5,3X,I5,3X,I5,3X,I5,3X,I5,3X,I5,3X,I5)")P1,P2,P3,P4,P5,P6,P7,P8
        WRITE(ITEC,"(I5,3X,I5,3X,I5,3X,I5,3X,I5,3X,I5,3X,I5,3X,I5)")P1,P2,P3,P4,P5,P6,P7,P8
-    !ELSE IF (NPAR1 == 5) THEN    ! BEAM Elements
+    ELSE IF (NPAR1 == 5) THEN    ! BEAM Elements
        
-     !  READ(10,"(I5,4X,I5)") P1,P2
-      ! WRITE(ITEC,"(I5,4X,I5,4X,I5)") P1,P2
+       READ(10,"(I5,4X,I5)") P1,P2
+       WRITE(ITEC,"(I5,4X,I5,4X,I5)") P1,P2
       
   ELSE
   END IF

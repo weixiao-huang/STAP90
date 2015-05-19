@@ -67,7 +67,7 @@ SUBROUTINE EAM (ID,X,Y,Z,U,MHT,E,AREA,INERTIAL,LM,XYZ,MATP)
   INTEGER :: NPAR1, NUME, NUMMAT, ND, I, J, L, N
   INTEGER :: MTYPE, IPRINT
   REAL(8) :: XL2, XL, SQRT,XM, XX, YY, STR, P
-  REAL(8) :: EAA, EII 
+  REAL(8) :: EAA, EII ,UE(6), DISP(NEQ)
   
   NPAR1  = NPAR(1)
   NUME   = NPAR(2)
@@ -200,23 +200,36 @@ SUBROUTINE EAM (ID,X,Y,Z,U,MHT,E,AREA,INERTIAL,LM,XYZ,MATP)
      DO N=1,NUME
         IPRINT=IPRINT + 1
         IF (IPRINT.GT.50) IPRINT=1
-        IF (IPRINT.EQ.1) WRITE (IOUT,"(//,' S T R E S S  C A L C U L A T I O N S  F O R  ',  &
-                                           'E L E M E N T  G R O U P',I4,//,   &
-                                           '  ELEMENT',13X,'FORCE',12X,'STRESS',/,'  NUMBER')") NG
-        MTYPE=MATP(N)
+        IF (IPRINT.EQ.1) WRITE (IOUT,"(//,' F O R C E S',//,'  NODE ',13X,   &
+                          'X-STRESS          Y-STRESS')")
+       MTYPE=MATP(N)
+        do L=1,2    
+            I=LM(3*L-2,N)
+            IF (I.GT.0) then
+                UE(3*L-2)=U(I)
+            else
+                UE(3*L-2)=0
+            end if       
+            
+            J=LM(3*L-1,N)
+            
+            if (J.GT.0) then
+                UE(3*L-1) = U(J)
+            else
+                UE(3*L-1) = 0
+            end if
+            
+            J=LM(3*L,N)
+            
+            if (J.GT.0) then
+                UE(3*L) = U(J)
+            else
+                UE(3*L) = 0
+            end if
+        end do
+        
+        !WRITE (IOUT,"(E13.6)")UE
 
-        P=0
-        STR=0
-        
-        XL2=0.
-        DO L=1,3
-           D(L)=XYZ(L,N) - XYZ(L+3,N)
-           XL2=XL2 + D(L)*D(L)
-        END DO
-        XL=SQRT(XL2)   ! Length of element N
-        
-        EAA=E(MTYPE)*AREA(MTYPE)    !EA
-        EII=INERTIAL(MTYPE)*E(MTYPE)      !IA
         
         WRITE (IOUT,"(1X,I5,11X,E13.6,4X,E13.6)") N,P,STR
      END DO

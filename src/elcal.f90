@@ -72,7 +72,7 @@ SUBROUTINE ELEMNT
   ELSE IF (NPAR1 == 5) THEN    ! Beam Elements
      CALL BEAM
   ELSE IF (NPAR1 == 6) THEN    ! Plate Elements
-!     CALL PLATE
+     CALL PLATE
   ELSE IF (NPAR1 == 7) THEN    ! Shell Elements
      CALL SHELL
   ELSE
