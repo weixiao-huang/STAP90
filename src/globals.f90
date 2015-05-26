@@ -43,7 +43,8 @@ module GLOBALS
 
    integer :: MODEX		! Solution mode: 0 - data check only;  1 -  execution  
    integer :: NDF       ! the degree of the freedom of the point in the element
-
+   integer :: NIE       !Nodel Number in the element;
+   
    real :: TIM(5)		! Timing information
    character*80 :: HED	! Master heading information for use in labeling the output
 
