@@ -140,6 +140,8 @@ PROGRAM STAP90
   
 ! Assemble stiffness matrix
 
+
+
 ! ALLOCATE STORAGE
 !    MAXA(NEQ+1)
   CALL MEMFREEFROMTO(6,8)
@@ -148,6 +150,7 @@ PROGRAM STAP90
 
   CALL ADDRES (IA(NP(2)),IA(NP(5)))
 
+  
 ! ALLOCATE STORAGE
 !    A(NWK) - Global structure stiffness matrix K
 !    R(NEQ) - Load vector R and then displacement solution U
@@ -206,7 +209,7 @@ PROGRAM STAP90
         
 !       Calculation of EIGENVALUES and EIGENVECTORS
         CALL EIGEN
-
+        CALL POSTPROCESSOR
      END DO
 
      CALL SECOND (TIM(5))
@@ -295,9 +298,9 @@ SUBROUTINE WRITED (DISP,ID,NEQ,NUMNP)
 
      WRITE (IOUT,'(1X,I3,8X,3E18.6)') II,D
      WRITE (10,'(3E18.6)') D
-  END DO
+  END DO 
 
-  CALL POSTPROCESSOR
+ 
   RETURN
 
 END SUBROUTINE WRITED

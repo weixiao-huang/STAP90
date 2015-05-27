@@ -1,4 +1,4 @@
-! . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+ï»¿! . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 ! .                                                                       .
 ! .                            S T A P 9 0                                .
 ! .                                                                       .
@@ -64,16 +64,19 @@ SUBROUTINE ELEMNT
   IF (NPAR1 == 1) THEN
      CALL TRUSS
   ELSE IF (NPAR1 == 2) THEN    ! Quadrilateral Elements
+     NIE=4
      CALL QuadrElem
   ELSE IF (NPAR1 == 3) THEN    ! Triangle Elements
+     NIE=3    
      CALL TRIELMT
   ELSE IF (NPAR1 == 4) THEN    ! 8H Elements
      CALL Hexahedral
   ELSE IF (NPAR1 == 5) THEN    ! Beam Elements
      CALL BEAM
-  ELSE IF (NPAR1 == 6) THEN    ! Plate Elements
-     CALL PLATE
-  ELSE IF (NPAR1 == 7) THEN    ! Shell Elements
+  ELSE IF (NPAR1 == 6) THEN    ! 
+     CALL PLATE      
+  ELSE IF (NPAR1 == 7) THEN
+     NIE=4
      CALL SHELL
   ELSE
 !    Other element types would be called here, identifying each
@@ -140,10 +143,10 @@ subroutine EIGEN
     ALLOCATE (VEC(NC,NC),D(NC),RTOLV(NC),BUP(NC),BLO(NC))
     ALLOCATE (BUPC(NC),Q(NEQ,NC))
     
-    IF (NPAR(5) == 1) THEN          ! ×Ó¿Õ¼äµü´ú·¨
+    IF (NPAR(5) == 1) THEN          ! subspace
         CALL SSPACE90(DA(NP(3)),DA(NP(13)),IA(NP(2)),RV,EIGV,TT,W,AR,BR,VEC,D,RTOLV,BUP,BLO,BUPC,NEQ, &
             NEQ+1,NWK,NWM,NROOT,RTOL,NC,NNC,NITEM,IFSS,IFPR,NSTIF,IOUT)
-    ELSE IF (NPAR(5) == 2) THEN     ! Lanczos·¨
+    ELSE IF (NPAR(5) == 2) THEN     ! Lanczos
         CALL LANCZOS(DA(NP(3)),DA(NP(13)),IA(NP(2)),RV,EIGV,TT,W,AR,BR,VEC,D,RTOLV,BUP,BLO,BUPC,NEQ, &
             NEQ+1,NWK,NWM,NROOT,RTOL,NC,NNC,NITEM,IFSS,IFPR,NSTIF,IOUT,Q)
     ELSE

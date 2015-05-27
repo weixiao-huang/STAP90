@@ -156,60 +156,46 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
   ELSE IF (IND .EQ. 2) THEN
 
 !shell问题分解为平面板的弯曲，再加上4Q单元的拉伸
-
-
      DO N=1,NUME
-         
-    MTYPE=MATP(N)
-     G =E(MTYPE)/(1.-PR(MTYPE)**2)                                                 
-     F=G*PR(MTYPE)                                                
-      H=(G-F)/2. 
-      D(1,1)=G                                                          
-      D(1,2)=F                                                          
-      D(1,3)=0.
-      D(2,1)=F                                                          
-      D(2,2)=G                                                          
-      D(2,3)=0. 
-      D(3,1)=0.                                                         
-      D(3,2)=0.                                                         
-      D(3,3)=H                                                     
+        MTYPE=MATP(N)
+        G =E(MTYPE)/(1.-PR(MTYPE)**2)                                                 
+        F=G*PR(MTYPE)                                                
+        H=(G-F)/2. 
+        D(1,1)=G                                                          
+        D(1,2)=F                                                          
+        D(1,3)=0.
+        D(2,1)=F                                                          
+        D(2,2)=G                                                          
+        D(2,3)=0. 
+        D(3,1)=0.                                                         
+        D(3,2)=0.                                                         
+        D(3,3)=H                                                     
       
-      alpha=E(MTYPE)*THICK(MTYPE)/(1.0+PR(MTYPE))/12.0*5.0    !按照剪切应变能等效原则取 k=6/5 alpha=G*t/2k
+        alpha=E(MTYPE)*THICK(MTYPE)/(1.0+PR(MTYPE))/12.0*5.0    !按照剪切应变能等效原则取 k=6/5 alpha=G*t/2k
 
-  
-  ! print *,D  
-   DO I=1,20
-     DO J=1,20
-         S(i,j)=0.
-     enddo
-   enddo
+        ! print *,D  
+        S = 0
    
-  do i=1,2                                                      
-     do j=1,2
-      CAll BBmat_shell(gp(i),gp(j),XYZ(1,N),B,detJ)
-      
-    S=S+WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ*THICK(MTYPE)**3/12.0  
+        do i=1,2                                                      
+            do j=1,2
+                CAll BBmat_shell(gp(i),gp(j),XYZ(1,N),B,detJ)
+                S=S+WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ*THICK(MTYPE)**3/12.0  
+            end do
+        end do  
 
-     enddo
-  enddo  
+        !采用减缩积分
 
-  !采用减缩积分
-
-      CAll BSmat_shell(0,0,XYZ(1,N),BS,detJ)
-      
-    S=S+matmul(transpose(BS),BS)*detJ*alpha 
-
+        CAll BSmat_shell(0,0,XYZ(1,N),BS,detJ)
+        S=S+matmul(transpose(BS),BS)*detJ*alpha 
   
- do i=1,2                                                      
-     do j=1,2
-      CAll Bmat4q(gp(i),gp(j),XYZ(1,N),B,detJ)
-      
-    S=S+WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ*THICK(MTYPE)  
-
-     enddo
- enddo
+        do i=1,2                                                      
+            do j=1,2
+            CAll Bmat4q(gp(i),gp(j),XYZ(1,N),B,detJ)
+            S=S+WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ*THICK(MTYPE)  
+            end do
+        end do
   
-! write(*,"(20(e12.5,1X))") ((Stemp(i,j),j=1,20),i=1,20)
+        ! write(*,"(20(e12.5,1X))") ((Stemp(i,j),j=1,20),i=1,20)
  
         CALL ADDBAN (DA(NP(3)),IA(NP(2)),S,LM(1,N),ND)
      
@@ -229,36 +215,29 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
                                            '  ELEMENT',5X,'GAUSS POINT',5X,'StressXX',5X,'StressYY',5X,'StressXY',/,&
                                           '  NUMBER')") NG
         MTYPE=MATP(N)
-     DO L=1,4  
-         
-       Do J=1,5
-           I=LM(5*L-J+1,N)
-           IF (I.GT.0)then
-            UE(5*L-J+1)=U(I)
-           else
-            UE(5*L-J+1)=0
-           endif 
-        enddo
-    END DO
+        DO L=1,4  
+            Do J=1,5
+                I=LM(5*L-J+1,N)
+                if (I.GT.0)then
+                    UE(5*L-J+1)=U(I)
+                else
+                    UE(5*L-J+1)=0
+                endif 
+            END DO
+        END DO
         
+        do i=1,2                                                      
+            do j=1,2  
+                CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
+                STR4q = matmul(B,UE)
+                P4q   = matmul(D,STR4q)
+                CAll Nmat_shell(0,0,BS)
+                mxy = matmul(BS,UE)*E(MTYPE)*THICK(MTYPE)**3/12.0  
+                WRITE (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6,4X,E13.6,4X,E13.6)")N,gp(i),gp(j),P4q(1),P4q(2),P4q(3),mxy(1),mxy(2)
+            end do
+        end do
         
- do i=1,2                                                      
-     do j=1,2  
-  
-      CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
-
-    STR4q = matmul(B,UE)
-     P4q   = matmul(D,STR4q)
-     
-     CAll Nmat_shell(0,0,BS)
-     mxy = matmul(BS,UE)*E(MTYPE)*THICK(MTYPE)**3/12.0  
-   
-        WRITE (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6,4X,E13.6,4X,E13.6)")N,gp(i),gp(j),P4q(1),P4q(2),P4q(3),mxy(1),mxy(2)
-     enddo
- enddo
-
      END DO
-
   ELSE 
      STOP "*** ERROR *** Invalid IND value."
   END IF
@@ -266,160 +245,157 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
 END SUBROUTINE hell
 
 
- subroutine Nmat_shell(eta,psi,N)
-real*8 ::psi,eta,N(2,12)
-N(1,2)=0.25*(1-psi)*(1-eta)
-N(2,3)=0.25*(1-psi)*(1-eta)
-N(1,5)=0.25*(1+psi)*(1-eta)
-N(2,6)=0.25*(1+psi)*(1-eta)
-N(1,8)=0.25*(1+psi)*(1+eta)
-N(2,9)=0.25*(1+psi)*(1+eta)
-N(1,11)=0.25*(1-psi)*(1+eta)
-N(2,12)=0.25*(1-psi)*(1+eta)
- end subroutine Nmat_shell
+subroutine Nmat_shell(eta,psi,N)
+    implicit none
+    real*8 ::psi,eta,N(2,12)
+    N(1,2)=0.25*(1-psi)*(1-eta)
+    N(2,3)=0.25*(1-psi)*(1-eta)
+    N(1,5)=0.25*(1+psi)*(1-eta)
+    N(2,6)=0.25*(1+psi)*(1-eta)
+    N(1,8)=0.25*(1+psi)*(1+eta)
+    N(2,9)=0.25*(1+psi)*(1+eta)
+    N(1,11)=0.25*(1-psi)*(1+eta)
+    N(2,12)=0.25*(1-psi)*(1+eta)
+end subroutine Nmat_shell
+   
     
 subroutine Bmat4q(eta,psi,XY,B,detJ)
-real*8 :: eta,psi,XY(12),B(3,20),detJ,GN(2,4),J(2,2),JINV(2,2),DUM
-integer::K2,K,I
+    implicit none
+    real*8 :: eta,psi,XY(12),B(3,20),detJ,GN(2,4),J(2,2),JINV(2,2),DUM
+    integer::K2,K,I
 
-GN(1,1)=0.25*(eta-1.0)
-GN(1,2)=-GN(1,1)
-GN(1,3)=0.25*(1.0+eta)
-GN(1,4)=-GN(1,3)
-GN(2,1)=0.25*(psi-1)
-GN(2,2)=-0.25*(psi+1)
-GN(2,3)=-GN(2,2)
-GN(2,4)=-GN(2,1)
+    GN(1,1)=0.25*(eta-1.0)
+    GN(1,2)=-GN(1,1)
+    GN(1,3)=0.25*(1.0+eta)
+    GN(1,4)=-GN(1,3)
+    GN(2,1)=0.25*(psi-1)
+    GN(2,2)=-0.25*(psi+1)
+    GN(2,3)=-GN(2,2)
+    GN(2,4)=-GN(2,1)
 
-J(1,1)=GN(1,1)*xy(1)+GN(1,2)*xy(4)+GN(1,3)*xy(7)+GN(1,4)*xy(10)
-J(1,2)=GN(1,1)*xy(2)+GN(1,2)*xy(5)+GN(1,3)*xy(8)+GN(1,4)*xy(11)
-J(2,1)=GN(2,1)*xy(1)+GN(2,2)*xy(4)+GN(2,3)*xy(7)+GN(2,4)*xy(10)
-J(2,2)=GN(2,1)*xy(2)+GN(2,2)*xy(5)+GN(2,3)*xy(8)+GN(2,4)*xy(11)
+    J(1,1)=GN(1,1)*xy(1)+GN(1,2)*xy(4)+GN(1,3)*xy(7)+GN(1,4)*xy(10)
+    J(1,2)=GN(1,1)*xy(2)+GN(1,2)*xy(5)+GN(1,3)*xy(8)+GN(1,4)*xy(11)
+    J(2,1)=GN(2,1)*xy(1)+GN(2,2)*xy(4)+GN(2,3)*xy(7)+GN(2,4)*xy(10)
+    J(2,2)=GN(2,1)*xy(2)+GN(2,2)*xy(5)+GN(2,3)*xy(8)+GN(2,4)*xy(11)
 
-detJ=J(1,1)*J(2,2)-J(2,1)*J(1,2)
-DUM=1./detJ
-JINV(1,1)=J(2,2)*DUM
-JINV(1,2)=-J(1,2)*DUM
-JINV(2,1)=-J(2,1)*DUM
-JINV(2,2)=J(1,1)*DUM
+    detJ=J(1,1)*J(2,2)-J(2,1)*J(1,2)
+    DUM=1./detJ
+    JINV(1,1)=J(2,2)*DUM
+    JINV(1,2)=-J(1,2)*DUM
+    JINV(2,1)=-J(2,1)*DUM
+    JINV(2,2)=J(1,1)*DUM
 
-K2=0
-DO K=1,4
-    K2=K2+5
-    
-do  I=1,5
-      B(1,K2-I+1) = 0.                                                    
-      B(2,K2-I+1) = 0. 
-enddo
+    K2=0
+    do K=1,4
+        K2=K2+5
+        do I=1,5
+            B(1,K2-I+1) = 0.                                                    
+            B(2,K2-I+1) = 0. 
+        end do
 
-  do I=1,2
-  B(1,K2-4)=B(1,K2-4)+JINV(1,I)*GN(I,K)
-  B(2,K2-3)=B(2,K2-3)+JINV(2,I)*GN(I,K)
-  enddo
-      B(3,K2-3)  =B(1,K2-4)
-      B(3,K2-4)  =B(2,K2-3)
-      B(3,K2-2) = 0.
-      B(3,K2-1) = 0.
-      B(3,K2)   = 0.
-    
-
-enddo
-    end subroutine Bmat4q
+        do I=1,2
+            B(1,K2-4)=B(1,K2-4)+JINV(1,I)*GN(I,K)
+            B(2,K2-3)=B(2,K2-3)+JINV(2,I)*GN(I,K)
+        end do
+        B(3,K2-3)  =B(1,K2-4)
+        B(3,K2-4)  =B(2,K2-3)
+        B(3,K2-2) = 0.
+        B(3,K2-1) = 0.
+        B(3,K2)   = 0.
+    end do
+end subroutine Bmat4q
       
-subroutine BBmat_shell(eta,psi,XY,BB,detJ)
-real*8 :: eta,psi,XY(12),BB(3,20),detJ,GN(2,4),J(2,2),JINV(2,2),DUM
-integer::K2,K,I
-
-GN(1,1)=0.25*(eta-1.0)
-GN(1,2)=-GN(1,1)
-GN(1,3)=0.25*(1.0+eta)
-GN(1,4)=-GN(1,3)
-GN(2,1)=0.25*(psi-1)
-GN(2,2)=-0.25*(psi+1)
-GN(2,3)=-GN(2,2)
-GN(2,4)=-GN(2,1)
-
-J(1,1)=GN(1,1)*xy(1)+GN(1,2)*xy(4)+GN(1,3)*xy(7)+GN(1,4)*xy(10)
-J(1,2)=GN(1,1)*xy(2)+GN(1,2)*xy(5)+GN(1,3)*xy(8)+GN(1,4)*xy(11)
-J(2,1)=GN(2,1)*xy(1)+GN(2,2)*xy(4)+GN(2,3)*xy(7)+GN(2,4)*xy(10)
-J(2,2)=GN(2,1)*xy(2)+GN(2,2)*xy(5)+GN(2,3)*xy(8)+GN(2,4)*xy(11)
-
-detJ=J(1,1)*J(2,2)-J(2,1)*J(1,2)
-DUM=1./detJ
-JINV(1,1)=J(2,2)*DUM
-JINV(1,2)=-J(1,2)*DUM
-JINV(2,1)=-J(2,1)*DUM
-JINV(2,2)=J(1,1)*DUM
-
-K2=0
-DO K=1,4
-    K2=K2+5
     
-do  I=1,5
-      BB(1,K2-I+1) = 0.                                                    
-      BB(2,K2-I+1) = 0. 
-      BB(3,K2-I+1) = 0.
-enddo
+subroutine BBmat_shell(eta,psi,XY,BB,detJ)
+    implicit none
+    real*8 :: eta,psi,XY(12),BB(3,20),detJ,GN(2,4),J(2,2),JINV(2,2),DUM
+    integer::K2,K,I
 
-  do I=1,2
-  BB(1,K2)  =BB(1,K2)  + JINV(1,I)*GN(I,K)
-  BB(2,K2-1)=BB(2,K2-1)- JINV(2,I)*GN(I,K)
-  enddo
-      BB(3,K2-1)  = -BB(1,K2)
-      BB(3,K2)   = -BB(2,K2-1)
+    GN(1,1)=0.25*(eta-1.0)
+    GN(1,2)=-GN(1,1)
+    GN(1,3)=0.25*(1.0+eta)
+    GN(1,4)=-GN(1,3)
+    GN(2,1)=0.25*(psi-1)
+    GN(2,2)=-0.25*(psi+1)
+    GN(2,3)=-GN(2,2)
+    GN(2,4)=-GN(2,1)
 
- enddo   
+    J(1,1)=GN(1,1)*xy(1)+GN(1,2)*xy(4)+GN(1,3)*xy(7)+GN(1,4)*xy(10)
+    J(1,2)=GN(1,1)*xy(2)+GN(1,2)*xy(5)+GN(1,3)*xy(8)+GN(1,4)*xy(11)
+    J(2,1)=GN(2,1)*xy(1)+GN(2,2)*xy(4)+GN(2,3)*xy(7)+GN(2,4)*xy(10)
+    J(2,2)=GN(2,1)*xy(2)+GN(2,2)*xy(5)+GN(2,3)*xy(8)+GN(2,4)*xy(11)
+
+    detJ=J(1,1)*J(2,2)-J(2,1)*J(1,2)
+    DUM=1./detJ
+    JINV(1,1)=J(2,2)*DUM
+    JINV(1,2)=-J(1,2)*DUM
+    JINV(2,1)=-J(2,1)*DUM
+    JINV(2,2)=J(1,1)*DUM
+
+    K2=0
+    do K=1,4
+        K2=K2+5
+        do I=1,5
+            BB(1,K2-I+1) = 0.                                                    
+            BB(2,K2-I+1) = 0. 
+            BB(3,K2-I+1) = 0.
+        end do
+
+        do I=1,2
+            BB(1,K2)  =BB(1,K2)  + JINV(1,I)*GN(I,K)
+            BB(2,K2-1)=BB(2,K2-1)- JINV(2,I)*GN(I,K)
+        end do
+        BB(3,K2-1)  = -BB(1,K2)
+        BB(3,K2)   = -BB(2,K2-1)
+    end do
 
 end subroutine BBmat_shell
     
 subroutine BSmat_shell(eta,psi,XY,BS,detJ)
-real*8 :: eta,psi,XY(12),BS(2,20),detJ,GN(2,4),J(2,2),JINV(2,2),DUM,N(4)
-integer::K2,K,I
+    implicit none
+    real*8 :: eta,psi,XY(12),BS(2,20),detJ,GN(2,4),J(2,2),JINV(2,2),DUM,N(4)
+    integer::K2,K,I
 
-GN(1,1)=0.25*(eta-1.0)
-GN(1,2)=-GN(1,1)
-GN(1,3)=0.25*(1.0+eta)
-GN(1,4)=-GN(1,3)
-GN(2,1)=0.25*(psi-1)
-GN(2,2)=-0.25*(psi+1)
-GN(2,3)=-GN(2,2)
-GN(2,4)=-GN(2,1)
-N(1)=0.25*(1-psi)*(1-eta)
-N(2)=0.25*(1+psi)*(1-eta)
-N(3)=0.25*(1+psi)*(1+eta)
-N(4)=0.25*(1-psi)*(1+eta)
+    GN(1,1)=0.25*(eta-1.0)
+    GN(1,2)=-GN(1,1)
+    GN(1,3)=0.25*(1.0+eta)
+    GN(1,4)=-GN(1,3)
+    GN(2,1)=0.25*(psi-1)
+    GN(2,2)=-0.25*(psi+1)
+    GN(2,3)=-GN(2,2)
+    GN(2,4)=-GN(2,1)
+    N(1)=0.25*(1-psi)*(1-eta)
+    N(2)=0.25*(1+psi)*(1-eta)
+    N(3)=0.25*(1+psi)*(1+eta)
+    N(4)=0.25*(1-psi)*(1+eta)
 
-J(1,1)=GN(1,1)*xy(1)+GN(1,2)*xy(4)+GN(1,3)*xy(7)+GN(1,4)*xy(10)
-J(1,2)=GN(1,1)*xy(2)+GN(1,2)*xy(5)+GN(1,3)*xy(8)+GN(1,4)*xy(11)
-J(2,1)=GN(2,1)*xy(1)+GN(2,2)*xy(4)+GN(2,3)*xy(7)+GN(2,4)*xy(10)
-J(2,2)=GN(2,1)*xy(2)+GN(2,2)*xy(5)+GN(2,3)*xy(8)+GN(2,4)*xy(11)
+    J(1,1)=GN(1,1)*xy(1)+GN(1,2)*xy(4)+GN(1,3)*xy(7)+GN(1,4)*xy(10)
+    J(1,2)=GN(1,1)*xy(2)+GN(1,2)*xy(5)+GN(1,3)*xy(8)+GN(1,4)*xy(11)
+    J(2,1)=GN(2,1)*xy(1)+GN(2,2)*xy(4)+GN(2,3)*xy(7)+GN(2,4)*xy(10)
+    J(2,2)=GN(2,1)*xy(2)+GN(2,2)*xy(5)+GN(2,3)*xy(8)+GN(2,4)*xy(11)
 
-detJ=J(1,1)*J(2,2)-J(2,1)*J(1,2)
-DUM=1./detJ
-JINV(1,1)=J(2,2)*DUM
-JINV(1,2)=-J(1,2)*DUM
-JINV(2,1)=-J(2,1)*DUM
-JINV(2,2)=J(1,1)*DUM
+    detJ=J(1,1)*J(2,2)-J(2,1)*J(1,2)
+    DUM=1./detJ
+    JINV(1,1)=J(2,2)*DUM
+    JINV(1,2)=-J(1,2)*DUM
+    JINV(2,1)=-J(2,1)*DUM
+    JINV(2,2)=J(1,1)*DUM
 
-K2=0
-DO K=1,4
-    K2=K2+5
-    
-do  I=1,5
-      BS(1,K2-I+1) = 0.                                                    
-      BS(2,K2-I+1) = 0. 
+    K2=0
+    do K=1,4
+        K2=K2+5
+        do I=1,5
+            BS(1,K2-I+1) = 0.                                                    
+            BS(2,K2-I+1) = 0. 
+        end do
 
-enddo
+        do I=1,2
+            BS(1,K2-2)=BS(1,K2-2)+JINV(1,I)*GN(I,K)
+            BS(2,K2-2)=BS(2,K2-2)+JINV(2,I)*GN(I,K)
+        end do
+        BS(1,K2-1)  =-N(K)
+        BS(2,K2)    = N(K)
+    end do   
 
-  do I=1,2
-  BS(1,K2-2)=BS(1,K2-2)+JINV(1,I)*GN(I,K)
-  BS(2,K2-2)=BS(2,K2-2)+JINV(2,I)*GN(I,K)
-  enddo
-      BS(1,K2-1)  =-N(K)
-      BS(2,K2)    = N(K)
-
- enddo   
-
-
-    end subroutine BSmat_shell
+end subroutine BSmat_shell
     

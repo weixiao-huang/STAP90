@@ -99,6 +99,8 @@ IF (ELETY==180) THEN
     ALLOCATE(IEN(2,NUME))
 ELSEIF (ELETY==182) THEN
     ALLOCATE(IEN(4,NUME))
+ELSEIF(ELETY==185) THEN
+    ALLOCATE(IEN(8,NUME))
 ENDIF
 DO WHILE (.TRUE.)
 	READ (IANS,'(A6)') P
@@ -108,6 +110,8 @@ DO WHILE (.TRUE.)
  			    READ (IANS,'(99X,4I9)') IEN(1,I),IEN(2,I),IEN(3,I),IEN(4,I)
  			ELSEIF (ELETY==180) THEN
  			    READ (IANS,'(99X,2I9)') IEN(1,I),IEN(2,I)
+            ELSEIF (ELETY==185) THEN
+ 			    READ (IANS,'(99X,8I9)') IEN(1,I),IEN(2,I),IEN(3,I),IEN(4,I),IEN(5,I),IEN(6,I),IEN(7,I),IEN(8,I)
  			ENDIF
 		ENDDO
 		EXIT
@@ -117,10 +121,17 @@ DO WHILE (.TRUE.)
 ENDDO
 !读入边界条件
 ALLOCATE(ID(3,NUMP),F(3,NUMP))
-DO I=1,NUMP
-    ID(1,I)=0;ID(2,I)=0;ID(3,I)=1
-    F=0
-ENDDO
+IF (ELETY==185) THEN
+    DO I=1,NUMP
+        ID(1,I)=0;ID(2,I)=0;ID(3,I)=0
+        F=0
+    ENDDO
+ELSE
+    DO I=1,NUMP
+        ID(1,I)=0;ID(2,I)=0;ID(3,I)=1
+        F=0
+    ENDDO
+ENDIF
 NUMC=0    !计数集中载荷个数
 DO WHILE (.TRUE.)
 	READ (IANS,'(A5)') P
@@ -178,15 +189,20 @@ DO WHILE (.TRUE.)
 ENDDO
 !人工输入材料性质
 1000WRITE(*,*) '输入单元类型 NPAR1=:(truss=1,4Q=2,3T=3,8H=4,beam=5,plate=6,shell=7) '
-READ(*,*) NPAR1
+READ(*,*) NPAR1 
 WRITE(*,*) '输入杨氏模量 E=: '
 READ(*,*) MAT%E
-WRITE(*,*) '输入密度 DENS=: '
-READ(*,*) MAT%DENS
 IF (ELETY==180) THEN
+    WRITE(*,*) '输入密度 DENS=: '
+    READ(*,*) MAT%DENS
     WRITE(*,*) '输入截面积 AREA=: '
     READ(*,*) MAT%AREA
 ELSEIF (ELETY==182) THEN
+    WRITE(*,*) '输入密度 DENS=: '
+    READ(*,*) MAT%DENS
+    WRITE(*,*) '输入泊松比 PO=: '
+    READ(*,*) MAT%P
+ELSEIF (ELETY==185) THEN
     WRITE(*,*) '输入泊松比 PO=: '
     READ(*,*) MAT%P
 ENDIF
@@ -218,6 +234,8 @@ ELSEIF (ELETY==182) THEN
     ELSE
         WRITE (IIN,'(4I5)') 3,2*NUME,1,1
     ENDIF
+ELSEIF(ELETY==185) THEN
+    WRITE (IIN,'(4I5)') 4,NUME,1
 ENDIF
 
 !输出材料数据
@@ -225,6 +243,8 @@ IF (ELETY==180) THEN
 	WRITE (IIN,'(I5,E10.3,2F10.5)') 1,MAT%E,MAT%AREA,MAT%DENS
 ELSEIF (ELETY==182) THEN
     WRITE (IIN,'(I5,E10.3,2F10.5)') 1,MAT%E,MAT%P,MAT%DENS
+ELSEIF (ELETY==185) THEN
+    WRITE (IIN,'(I5,E10.3,2F10.5)') 1,MAT%E,MAT%P
 ENDIF
 !输出单元数据
 DO I=1,NUME
@@ -237,6 +257,8 @@ DO I=1,NUME
             WRITE (IIN,'(5I5)') 2*I-1,IEN(1,I),IEN(2,I),IEN(3,I),1
             WRITE (IIN,'(5I5)') 2*I,IEN(3,I),IEN(4,I),IEN(1,I),1
         ENDIF
+    ELSEIF (ELETY==185) THEN
+	    WRITE (IIN,'(10I5)') I,IEN(1,I),IEN(2,I),IEN(3,I),IEN(4,I),IEN(5,I),IEN(6,I),IEN(7,I),IEN(8,I),1
 	ENDIF
 ENDDO
 

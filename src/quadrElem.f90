@@ -60,9 +60,7 @@ SUBROUTINE QuadrElem
   IF(IND == 3)THEN
       CALL SPR_4Q(IA(NP(10)),DA(NP(9)),A(N104))
   ENDIF
-      
-      
-  
+
   RETURN
 
 END SUBROUTINE QuadrElem
@@ -82,7 +80,7 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
   INTEGER :: ID(3,NUMNP),LM(8,NPAR(2)),MATP(NPAR(2)),MHT(NEQ)
   REAL(8) :: X(NUMNP),Y(NUMNP),Z(NUMNP),E(NPAR(3)),PR(NPAR(3)),  &
             THICK(NPAR(3)), XYZ(8,NPAR(2)),U(NEQ),UE(8)                           ! 在材料属性中添加了密度参数
-  REAL(8) :: S(8,8),D(4,4),Stemp(8,8),F,G,H,r
+  REAL(8) :: S(8,8),M(8,8),D(4,4),Stemp(8,8),F,G,H,r
 !  REAL(8) :: 
   
   INTEGER :: NPAR1, NUME, NUMMAT, ND,P(4), L, N, I,J,K
@@ -101,8 +99,6 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
   ITYPE  = NPAR(4)
   ND=8
 
-
-  
 ! Read and generate element information
   IF (IND .EQ. 1) THEN
 
@@ -138,7 +134,7 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
      WRITE (IOUT,"(//,' E L E M E N T   I N F O R M A T I O N',//,  &
                       ' ELEMENT     NODE     NODE      NODE      NODE      MATERIAL',/,   &
                       ' NUMBER-N      P1       P2       P3       P4       SET NUMBER')")
-    
+     
      
      K=NP(10)
      N=0
@@ -155,7 +151,7 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
         XYZ(7,N)=X(P(4))     ! Coordinates of the element's fourth node
         XYZ(8,N)=Y(P(4))
         MATP(N)=MTYPE  ! Material type
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        
         DO L=1,8
            LM(L,N)=0
         END DO
@@ -176,10 +172,10 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
         CALL COLHT (MHT,ND,LM(1,N))   
 
         WRITE (IOUT,"(I5,6X,I5,4X,I5,4X,I5,4X,I5,7X,I5)") N,P(1),P(2),P(3),P(4),MTYPE
-          WRITE(10,"(I5,4X,I5,4X,I5,4X,I5)")P(1),P(2),P(3),P(4)
+         WRITE(10,"(I5,4X,I5,4X,I5,4X,I5)")P(1),P(2),P(3),P(4)
      END DO
      
-!     print *, IA(NP(10))
+!    print *, IA(NP(10))
 
      RETURN
 
@@ -189,79 +185,73 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
 !对平面应力问题而言
 
      DO N=1,NUME
-    MTYPE=MATP(N)
-    THICK(MTYPE)=1.
-    F=E(MTYPE)/(1.+PR(MTYPE))                                                      
-      G=F*PR(MTYPE)/(1.-2.*PR(MTYPE))                                                 
-      H=F + G 
-      D(1,1)=H                                                          
-      D(1,2)=G                                                          
-      D(1,3)=0.                                                         
-      D(2,1)=G                                                          
-      D(2,2)=H                                                          
-      D(2,3)=0.                                                         
-      D(3,1)=0.                                                         
-      D(3,2)=0.                                                         
-      D(3,3)=F/2. 
-    IF (ITYPE.EQ.0) THEN             !轴对称的情况
-       D(1,4)=G                                                          
-      D(2,4)=G                                                          
-      D(3,4)=0.                                                         
-      D(4,1)=G                                                          
-      D(4,2)=G                                                          
-      D(4,3)=0.                                                         
-      D(4,4)=H
-    ELSEIF(ITYPE.eq.1) then          !平面应变
-      THICK(MTYPE)=1.
-      
-    elseif(ITYPE.eq.2) then          !平面应力
-      F=E(MTYPE)/(1-PR(MTYPE)**2)
-      D(1,1)=F                                                          
-      D(1,2)=F*PR(MTYPE)                                                          
-      D(1,3)=0.                                                         
-      D(2,1)=F*PR(MTYPE)                                                             
-      D(2,2)=F                                                          
-      D(2,3)=0.                                                         
-      D(3,1)=0.                                                         
-      D(3,2)=0.                                                         
-      D(3,3)=F*(1-PR(MTYPE))/2         
-     ENDIF  
+        MTYPE=MATP(N)
+        THICK(MTYPE)=1.
+        F=E(MTYPE)/(1.+PR(MTYPE))                                                      
+        G=F*PR(MTYPE)/(1.-2.*PR(MTYPE))                                                 
+        H=F + G 
+        D(1,1)=H                                                          
+        D(1,2)=G                                                          
+        D(1,3)=0.                                                         
+        D(2,1)=G                                                          
+        D(2,2)=H                                                          
+        D(2,3)=0.                                                         
+        D(3,1)=0.                                                         
+        D(3,2)=0.                                                         
+        D(3,3)=F/2. 
+        IF (ITYPE.EQ.0) THEN             !轴对称的情况
+            D(1,4)=G                                                          
+            D(2,4)=G                                                          
+            D(3,4)=0.                                                         
+            D(4,1)=G                                                          
+            D(4,2)=G                                                          
+            D(4,3)=0.                                                         
+            D(4,4)=H
+        ELSE IF(ITYPE.eq.1) THEN          !平面应变
+            THICK(MTYPE)=1.
+        ELSE IF(ITYPE.eq.2) THEN          !平面应力
+            F=E(MTYPE)/(1-PR(MTYPE)**2)
+            D(1,1)=F                                                          
+            D(1,2)=F*PR(MTYPE)                                                          
+            D(1,3)=0.                                                         
+            D(2,1)=F*PR(MTYPE)                                                             
+            D(2,2)=F                                                          
+            D(2,3)=0.                                                         
+            D(3,1)=0.                                                         
+            D(3,2)=0.                                                         
+            D(3,3)=F*(1-PR(MTYPE))/2         
+        ENDIF  
   
-  ! print *,D  
-   DO I=1,8
-     DO J=1,8
-         S(i,j)=0
-     enddo
-   enddo
+        ! print *,D  
+        S = 0
    
- if(ITYPE.eq.1.or.ITYPE.eq.2)then
- 
- do i=1,2                                                      
-     do j=1,2
-      CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
-
-      S=S+WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ*THICK(MTYPE)
-
-     enddo
- enddo
- 
- elseif(ITYPE.eq.0)   then                                                  !轴对称问题
-     
-      do i=1,2                                                      
-     do j=1,2
-      CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
-      CALL Nmat(gp(i),gp(j),NL)
-
-       r=2*pi*(NL(1,1)*XYZ(1,N)+NL(1,3)*XYZ(3,N)+NL(1,5)*XYZ(5,N)+NL(1,7)*XYZ(7,N))
-       
-      S=S+r*WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ
-
-     enddo
- enddo
-  endif       
+        if(ITYPE.eq.1.or.ITYPE.eq.2)then
+            do i=1,2                                                      
+                do j=1,2
+                    CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
+                    CALL Nmat(gp(i),gp(j),NL)
+                    S=S+WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ*THICK(MTYPE)
+                    
+!                   The mass matrix (NOTE: NOT HAVE THE DENSITY)
+                    M=M+WGT(i)*WGT(j)*matmul(transpose(NL),NL)*detJ*THICK(MTYPE)
+                end do
+            end do
+        else if(ITYPE.eq.0)then                                                  !轴对称问题
+            do i=1,2                                                      
+                do j=1,2
+                    CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
+                    CALL Nmat(gp(i),gp(j),NL)
+                    r=2*pi*(NL(1,1)*XYZ(1,N)+NL(1,3)*XYZ(3,N)+NL(1,5)*XYZ(5,N)+NL(1,7)*XYZ(7,N))
+                    S=S+r*WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ
+                    
+!                   The mass matrix (NOTE: NOT HAVE THE DENSITY)
+                    M=M+r*WGT(i)*WGT(j)*matmul(transpose(NL),NL)*detJ
+                end do
+            end do
+        end if       
 
         CALL ADDBAN (DA(NP(3)),IA(NP(2)),S,LM(1,N),ND)
-     
+        CALL ADDBAN (DA(NP(13)),IA(NP(2)),M,LM(1,N),ND)
      END DO
 
      RETURN
@@ -276,49 +266,45 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
         IPRINT=IPRINT + 1
         IF (IPRINT.GT.50) IPRINT=1
         IF (IPRINT.EQ.1) WRITE (IOUT,"(//,' S T R E S S  C A L C U L A T I O N S  F O R  ',  &
-                                           'E L E M E N T  G R O U P',I4,//,   &
-                                           '  ELEMENT',5X,'GAUSS POINT',5X,'StressXX',5X,'StressYY',5X,'StressXY',/,&
-                                          '  NUMBER')") NG
+                                            'E L E M E N T  G R O U P',I4,//,   &
+                                            '  ELEMENT',5X,'GAUSS POINT',5X,'StressXX',5X,'StressYY',5X,'StressXY',/,&
+                                            '  NUMBER')") NG
         MTYPE=MATP(N)
-     DO L=1,4    
-           I=LM(2*L-1,N)
-           IF (I.GT.0)then
-            UE(2*L-1)=U(I)
-           else
-            UE(2*L-1)=0
-           endif       
-           J=LM(2*L,N)
-               IF (J.GT.0)then
-                  UE(2*L)=U(J)
-                 else
-                 UE(2*L)=0
-           endif
-    END DO
+        DO L=1,4    
+            I=LM(2*L-1,N)
+            if (I.GT.0)then
+                UE(2*L-1)=U(I)
+            else
+                UE(2*L-1)=0
+            endif       
+            J=LM(2*L,N)
+            IF (J.GT.0)then
+                UE(2*L)=U(J)
+            else
+                UE(2*L)=0
+            endif
+        END DO
         
-        
- do i=1,2                                                      
-     do j=1,2  
-  
-      CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
-
-     STR = matmul(B,UE)
-     PF   = matmul(D,STR)
-        Do k=1,3
-        CIGMA(k,2*i+j-2)=PF(k)
-        enddo
-        WRITE (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,gp(i),gp(j),PF(1),PF(2),PF(3)
-     enddo
- enddo
+        do i=1,2                                                      
+            do j=1,2  
+                CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
+                STR = matmul(B,UE)
+                PF  = matmul(D,STR)
+                Do k=1,3
+                    CIGMA(k,2*i+j-2)=PF(k)
+                end do
+                WRITE (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,gp(i),gp(j),PF(1),PF(2),PF(3)
+            end do
+        end do
  
-     CAll Bmat(0,0,XYZ(1,N),B,detJ)
-     STR = matmul(B,UE)
-     PF   = matmul(D,STR)
-        Do k=1,3
-        CIGMA(k,5)=PF(k)
-        enddo
+        CAll Bmat(0,0,XYZ(1,N),B,detJ)
+        STR = matmul(B,UE)
+        PF   = matmul(D,STR)
+        do k=1,3
+            CIGMA(k,5)=PF(k)
+        end do
   
-        CALL ADDSPR (N,IA(NP(10)+NIE*(N-1)),DA(NP(9)),CIGMA)    ! 直接操作内存！！！  危险。。  NP(10)+NIE*(N-1) 第N个单元的位置
-
+        CALL ADDSPR (N,IA(NP(10)+NIE*(N-1)),DA(NP(9)),CIGMA)             ! 直接操作内存！！！  危险。。  NP(10)+NIE*(N-1) 第N个单元的位置
      END DO
 
   ELSE 
@@ -328,62 +314,64 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
 END SUBROUTINE Quad_1
 
 
- subroutine Nmat(eta,psi,N)
-real*8 ::psi,eta,N(2,8)
-N(1,1)=0.25*(1-psi)*(1-eta)
-N(2,2)=0.25*(1-psi)*(1-eta)
-N(1,3)=0.25*(1+psi)*(1-eta)
-N(2,4)=0.25*(1+psi)*(1-eta)
-N(1,5)=0.25*(1+psi)*(1+eta)
-N(2,6)=0.25*(1+psi)*(1+eta)
-N(1,7)=0.25*(1-psi)*(1+eta)
-N(2,8)=0.25*(1-psi)*(1+eta)
- end subroutine Nmat
+subroutine Nmat(eta,psi,N)
+    implicit none
+    real(8) ::psi,eta,N(2,8)
+    N(1,1)=0.25*(1-psi)*(1-eta)
+    N(2,2)=0.25*(1-psi)*(1-eta)
+    N(1,3)=0.25*(1+psi)*(1-eta)
+    N(2,4)=0.25*(1+psi)*(1-eta)
+    N(1,5)=0.25*(1+psi)*(1+eta)
+    N(2,6)=0.25*(1+psi)*(1+eta)
+    N(1,7)=0.25*(1-psi)*(1+eta)
+    N(2,8)=0.25*(1-psi)*(1+eta)
+end subroutine Nmat
     
 subroutine Bmat(eta,psi,XY,B,detJ)
-real*8 :: eta,psi,XY(8),B(4,8),detJ,GN(2,4),J(2,2),JINV(2,2),DUM,N(4)
-integer::K2,K,I
+    implicit none
+    real(8) :: eta,psi,XY(8),B(4,8),detJ,GN(2,4),J(2,2),JINV(2,2),DUM,N(4)
+    integer::K2,K,I
 
-GN(1,1)=0.25*(eta-1.0)
-GN(1,2)=-GN(1,1)
-GN(1,3)=0.25*(1.0+eta)
-GN(1,4)=-GN(1,3)
-GN(2,1)=0.25*(psi-1)
-GN(2,2)=-0.25*(psi+1)
-GN(2,3)=-GN(2,2)
-GN(2,4)=-GN(2,1)
-N(1)=0.25*(1-psi)*(1-eta)
-N(2)=0.25*(1+psi)*(1-eta)
-N(3)=0.25*(1+psi)*(1+eta)
-N(4)=0.25*(1-psi)*(1+eta)
+    GN(1,1)=0.25*(eta-1.0)
+    GN(1,2)=-GN(1,1)
+    GN(1,3)=0.25*(1.0+eta)
+    GN(1,4)=-GN(1,3)
+    GN(2,1)=0.25*(psi-1)
+    GN(2,2)=-0.25*(psi+1)
+    GN(2,3)=-GN(2,2)
+    GN(2,4)=-GN(2,1)
+    N(1)=0.25*(1-psi)*(1-eta)
+    N(2)=0.25*(1+psi)*(1-eta)
+    N(3)=0.25*(1+psi)*(1+eta)
+    N(4)=0.25*(1-psi)*(1+eta)
 
-J(1,1)=GN(1,1)*xy(1)+GN(1,2)*xy(3)+GN(1,3)*xy(5)+GN(1,4)*xy(7)
-J(1,2)=GN(1,1)*xy(2)+GN(1,2)*xy(4)+GN(1,3)*xy(6)+GN(1,4)*xy(8)
-J(2,1)=GN(2,1)*xy(1)+GN(2,2)*xy(3)+GN(2,3)*xy(5)+GN(2,4)*xy(7)
-J(2,2)=GN(2,1)*xy(2)+GN(2,2)*xy(4)+GN(2,3)*xy(6)+GN(2,4)*xy(8)
+    J(1,1)=GN(1,1)*xy(1)+GN(1,2)*xy(3)+GN(1,3)*xy(5)+GN(1,4)*xy(7)
+    J(1,2)=GN(1,1)*xy(2)+GN(1,2)*xy(4)+GN(1,3)*xy(6)+GN(1,4)*xy(8)
+    J(2,1)=GN(2,1)*xy(1)+GN(2,2)*xy(3)+GN(2,3)*xy(5)+GN(2,4)*xy(7)
+    J(2,2)=GN(2,1)*xy(2)+GN(2,2)*xy(4)+GN(2,3)*xy(6)+GN(2,4)*xy(8)
 
-detJ=J(1,1)*J(2,2)-J(2,1)*J(1,2)
-DUM=1./detJ
-JINV(1,1)=J(2,2)*DUM
-JINV(1,2)=-J(1,2)*DUM
-JINV(2,1)=-J(2,1)*DUM
-JINV(2,2)=J(1,1)*DUM
+    detJ=J(1,1)*J(2,2)-J(2,1)*J(1,2)
+    DUM=1./detJ
+    JINV(1,1)=J(2,2)*DUM
+    JINV(1,2)=-J(1,2)*DUM
+    JINV(2,1)=-J(2,1)*DUM
+    JINV(2,2)=J(1,1)*DUM
 
-K2=0
-DO K=1,4
-    K2=K2+2
-      B(1,K2-1) = 0.                                                    
-      B(1,K2  ) = 0.                                                    
-      B(2,K2-1) = 0.                                                    
-      B(2,K2  ) = 0. 
-  do I=1,2
-  B(1,K2-1)=B(1,K2-1)+JINV(1,I)*GN(I,K)
-  B(2,K2)  =B(2,K2)  +JINV(2,I)*GN(I,K)
-  enddo
-B(3,K2)    =B(1,K2-1)
-B(3,K2-1)  =B(2,K2)
-B(4,K2)    =0
-B(4,K2-1)  =N(K)/(N(1)*xy(1)+N(2)*xy(3)+N(3)*xy(5)+N(4)*xy(7))
-enddo
+    K2=0
+    do K=1,4
+        K2=K2+2
+        B(1,K2-1) = 0.                                                    
+        B(1,K2  ) = 0.                                                    
+        B(2,K2-1) = 0.                                                    
+        B(2,K2  ) = 0. 
+        do I=1,2
+            B(1,K2-1)=B(1,K2-1)+JINV(1,I)*GN(I,K)
+            B(2,K2)  =B(2,K2)  +JINV(2,I)*GN(I,K)
+        end do
+        B(3,K2)    =B(1,K2-1)
+        B(3,K2-1)  =B(2,K2)
+        B(4,K2)    =0
+        B(4,K2-1)  =N(K)/(N(1)*xy(1)+N(2)*xy(3)+N(3)*xy(5)+N(4)*xy(7))
+    end do
 
 end subroutine Bmat

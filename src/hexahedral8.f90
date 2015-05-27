@@ -224,7 +224,6 @@ SUBROUTINE exahedral (ID,X,Y,Z,U,MHT,E,PR,LM,XYZ,MATP)
             DO J=1,2
                 DO K=1,2
                     CAll Bmatr(GP(I),GP(J),GP(K),XYZ(1,N),B,detJ)
-
                     S=S+WGT(I)*WGT(J)*WGT(K)*matmul(matmul(transpose(B),D),B)*detJ
                 END DO
             END DO

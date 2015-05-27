@@ -9,19 +9,28 @@ SUBROUTINE POSTPROCESSOR
   IMPLICIT NONE
   CHARACTER*80 FileInp
   INTEGER::NPAR1,ID(NDF,NUMNP),N,I,KK,II,IL,P1,P2,P3,P4,P5,P6,P7,P8,NUME
-  REAL(8) :: X(NUMNP),Y(NUMNP),Z(NUMNP),D(3),DISP(NEQ)
+  REAL(8) :: X(NUMNP),Y(NUMNP),Z(NUMNP),DX(NUMNP),DY(NUMNP),DZ(NUMNP),SXX(NUMNP),SYY(NUMNP),SXY(NUMNP),DISP(NEQ)
  
    OPEN(ITEC  , FILE = "TEC.DAT", STATUS = "REPLACE")
  
+   
+    NPAR1=NPAR(1)
+   IF (NPAR1==2) THEN
   WRITE (ITEC,"('TITLE="" ',A80,'""'/,&
+  'VARIABLES=""X"",""Y"","" Z"","" D-X"" ,"" D-Y"","" D-Z"",""SXX"",""SYY"",""SXY""'//,&
+  'ZONE  F=FEPOINT ')",advance="no") HED
+    ELSE
+   WRITE (ITEC,"('TITLE="" ',A80,'""'/,&
   'VARIABLES=""X"",""Y"","" Z"","" D-X"" ,"" D-Y"","" D-Z""'//,&
   'ZONE  F=FEPOINT ')",advance="no") HED
-  
+   END IF
+        
+        
   WRITE (ITEC,"(',N=',I5)",advance="no") NUMNP
       
   WRITE (ITEC,"(',E=',I5)",advance="no") NPAR(2) 
   
-  NPAR1=NPAR(1)
+ 
  
   IF (NPAR1 == 2) THEN    ! Quadrilateral Elements
       WRITE (ITEC,"(',ET=QUADRILATERAL')",advance="no")
@@ -63,10 +72,26 @@ REWIND(10)
   
    
    Do N=1,NUMNP
-     read(10,'(3E18.6)')  D(1),D(2),D(3)
-     write(ITEC,'(6E14.6)')X(N),Y(N),Z(N),D(1),D(2),D(3)
+     read(10,'(3E18.6)')  DX(N),DY(N),DZ(N)
+     
    enddo
    
+   
+   IF (NPAR1==2) THEN
+    DO N=1,NUMNP
+    READ(10,'(3F15.6)') SXX(N),SYY(N),SXY(N)
+    WRITE(ITEC,'(9E14.6)')X(N),Y(N),Z(N),DX(N),DY(N),DZ(N),SXX(N),SYY(N),SXY(N)
+    END DO
+   ELSE
+       DO N=1,NUMNP
+       WRITE(ITEC,'(6E14.6)')X(N),Y(N),Z(N),DX(N),DY(N),DZ(N)
+       END DO
+   ENDIF
+   
+   
+   
+   
+    
    REWIND(10)
   
    
