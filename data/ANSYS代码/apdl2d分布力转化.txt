@@ -1,0 +1,42 @@
+/PREP7
+H=10 
+ET,1,PLANE182   
+MP,EX,1,1E10
+MP,PRXY,1,0.3
+PCIRC,2,1,0,360
+LSTR,8,2  
+LSTR,7,3  
+LSTR,5,4  
+LSTR,6,1  
+LSEL,S,,,9,12,1
+ASBL,1,ALL
+ALLSEL
+LESIZE,ALL,,,H
+MSHKEY,1
+AMESH,ALL
+FINISH
+!将分布力转化为节点力
+/SOL
+LSEL,S,,,5,8,1          
+SFL,ALL,PRES,-1E5        !施加分布载荷,注意要和真实情况相反
+ALLSEL                   !进行选择操作后要恢复全选状态
+D,ALL,ALL,0              !约束住所有位移
+SOLVE                    !求解
+FINISH
+/SOL
+LSEL,S,,,5,8,1
+SFLDELE,ALL,PRES         !删除分布力
+ALLSEL
+DDELE,ALL,ALL            !删除所有约束
+LDREAD,REAC,1,1,,,TESTT,.rst !从支反力施加等效节点力
+
+!施加真正的边界条件
+LSEL,S,,,1,4,1
+DL,ALL,,ALL,0
+ALLSEL
+SOLVE
+FINISH
+
+AN INVALID FILE ENTENSION WAS SPECIFIED
+
+

@@ -104,7 +104,7 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
                    15 X,'E',14X,'A',14X,'ROU')")
 
      DO I=1,NUMMAT
-        READ (IIN,'(I5,3F12.5)') N,E(N),PR(N),THICK(N)                      ! Read material information  
+        READ (IIN,'(I5,3F10.0)') N,E(N),PR(N),THICK(N)                      ! Read material information  
         WRITE (IOUT,"(I5,4X,E12.5,2X,E12.5,2X,E12.5)") N,E(N),PR(N),THICK(N)
      END DO
 
@@ -147,7 +147,7 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
         CALL COLHT (MHT,ND,LM(1,N))   
 
         WRITE (IOUT,"(I5,6X,I5,4X,I5,4X,I5,4X,I5,7X,I5)") N,P1,P2,P3,P4,MTYPE
-
+        WRITE (10,"(I5,4X,I5,4X,I5,4X,I5)") P1,P2,P3,P4 
      END DO
 
      RETURN
@@ -178,20 +178,22 @@ SUBROUTINE hell(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
    
         do i=1,2                                                      
             do j=1,2
+
                 CAll BBmat_shell(gp(i),gp(j),XYZ(1,N),B,detJ)
+            
                 S=S+WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ*THICK(MTYPE)**3/12.0  
             end do
         end do  
 
         !采用减缩积分
 
-        CAll BSmat_shell(0,0,XYZ(1,N),BS,detJ)
+        CAll BSmat_shell(0,0,XYZ(1,N),BS,detJ)  
         S=S+matmul(transpose(BS),BS)*detJ*alpha 
   
         do i=1,2                                                      
             do j=1,2
-            CAll Bmat4q(gp(i),gp(j),XYZ(1,N),B,detJ)
-            S=S+WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ*THICK(MTYPE)  
+                CAll Bmat4q(gp(i),gp(j),XYZ(1,N),B,detJ)
+                S=S+WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ*THICK(MTYPE)  
             end do
         end do
   
@@ -390,8 +392,8 @@ subroutine BSmat_shell(eta,psi,XY,BS,detJ)
         end do
 
         do I=1,2
-            BS(1,K2-2)=BS(1,K2-2)+JINV(1,I)*GN(I,K)
-            BS(2,K2-2)=BS(2,K2-2)+JINV(2,I)*GN(I,K)
+            BS(1,K2-2)=BS(1,K2-2)+JINV(2,I)*GN(I,K)
+            BS(2,K2-2)=BS(2,K2-2)+JINV(1,I)*GN(I,K)
         end do
         BS(1,K2-1)  =-N(K)
         BS(2,K2)    = N(K)

@@ -93,12 +93,12 @@ SUBROUTINE exahedral (ID,X,Y,Z,U,MHT,E,PR,LM,XYZ,MATP)
   INTEGER :: ID(3,NUMNP),LM(24,NPAR(2)),MATP(NPAR(2)),MHT(NEQ)
   REAL(8) :: X(NUMNP),Y(NUMNP),Z(NUMNP),E(NPAR(3)),PR(NPAR(3)),  &
              XYZ(24,NPAR(2)),U(NEQ),UE(24)                           
-  REAL(8) :: S(24,24),D(6,6)
+  REAL(8) :: S(24,24),D(6,6),M(24,24)
   
   INTEGER :: NPAR1, NUME, NUMMAT, ND,P1,P2,P3,P4,P5,P6,P7,P8, L, N, I,J,K
   INTEGER :: MTYPE, IPRINT                                       
   REAL(8) :: STR(6), P(6)
-  REAL(8) :: GP(2), WGT(2),B(6,24),detJ
+  REAL(8) :: GP(2), WGT(2),B(6,24), Ne(3,24), detJ
   REAL(8),parameter:: pi=3.1415926535D0
   GP =[-0.5773502692 , 0.5773502692]                                            !两点高斯积分
   WGT=[   1          ,   1         ]
@@ -225,12 +225,17 @@ SUBROUTINE exahedral (ID,X,Y,Z,U,MHT,E,PR,LM,XYZ,MATP)
                 DO K=1,2
                     CAll Bmatr(GP(I),GP(J),GP(K),XYZ(1,N),B,detJ)
                     S=S+WGT(I)*WGT(J)*WGT(K)*matmul(matmul(transpose(B),D),B)*detJ
+                    
+!                   Mass matrix (NOT HAVE DENSITY, DENSITY = 1)
+                    CALL Nmatr(GP(I),GP(J),GP(K),Ne)
+                    M=M+WGT(I)*WGT(J)*WGT(K)*matmul(transpose(Ne),Ne)*detJ*1e3
                 END DO
             END DO
         END DO
  
         CALL ADDBAN (DA(NP(3)),IA(NP(2)),S,LM(1,N),ND)
-     
+        CALL ADDBAN (DA(NP(13)),IA(NP(2)),S,LM(1,N),ND)
+        
      END DO
 
      RETURN
@@ -362,3 +367,28 @@ subroutine Bmatr(xi,eta,zeta,XY,B,detJ)
     END DO
         
 end subroutine Bmatr
+
+
+subroutine Nmatr(xi,eta,zeta,Ne)
+    implicit none
+    real(8) ::xi,eta,zeta,N(8),Ne(3,24)
+    integer :: i
+    
+    N(1)=(1-xi)*(1-eta)*(1-zeta)
+    N(2)=(1+xi)*(1-eta)*(1-zeta)
+    N(3)=(1+xi)*(1+eta)*(1-zeta)
+    N(4)=(1-xi)*(1+eta)*(1-zeta)
+    N(5)=(1-xi)*(1-eta)*(1+zeta)
+    N(6)=(1+xi)*(1-eta)*(1+zeta)
+    N(7)=(1+xi)*(1+eta)*(1+zeta)
+    N(8)=(1-xi)*(1+eta)*(1+zeta)
+    N = 0.125*N
+    
+    Ne = 0
+    do i = 1,8
+        Ne(1,3*i-2) = N(1)
+        Ne(2,3*i-1) = N(1)
+        Ne(3,3*i  ) = N(1)
+    end do
+    
+end subroutine Nmatr

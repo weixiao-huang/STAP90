@@ -67,17 +67,21 @@ SUBROUTINE ELEMNT
      NIE=4
      CALL QuadrElem
   ELSE IF (NPAR1 == 3) THEN    ! Triangle Elements
-     NIE=3    
+     NIE=3
      CALL TRIELMT
   ELSE IF (NPAR1 == 4) THEN    ! 8H Elements
      CALL Hexahedral
   ELSE IF (NPAR1 == 5) THEN    ! Beam Elements
      CALL BEAM
-  ELSE IF (NPAR1 == 6) THEN    ! 
+  ELSE IF (NPAR1 == 6) THEN    ! Plate Elements
      CALL PLATE      
-  ELSE IF (NPAR1 == 7) THEN
+  ELSE IF (NPAR1 == 7) THEN    ! Shell Elements
      NIE=4
      CALL SHELL
+  ELSE IF (NPAR1 == 8) THEN    ! 6T Elements
+     CALL TRIELMT6
+  ELSE IF (NPAR1 == 9) THEN    ! 8Q Elements
+     CALL Quad8
   ELSE
 !    Other element types would be called here, identifying each
 !    element type by a different NPAR(1) parameter
@@ -121,10 +125,10 @@ subroutine EIGEN
   USE MEMALLOCATE
   IMPLICIT NONE
     
-    INTEGER :: NROOT, NC, NNC
+    INTEGER :: NROOT, NC, NNC,I,KK,IL,II,N,ID(NDF,NUMNP),NN,MM
     INTEGER :: NITEM,IFSS,IFPR,NSTIF, NWM
     
-    REAL(8) :: TT(NEQ), W(NEQ), RTOL
+    REAL(8) :: TT(NEQ), W(NEQ), RTOL,R(3),RX(3),RY(3)
     REAL(8),ALLOCATABLE :: RV(:,:), EIGV(:), AR(:), BR(:)
     REAL(8),ALLOCATABLE :: VEC(:,:), D(:), RTOLV(:), BUP(:), BLO(:)
     REAL(8),ALLOCATABLE :: BUPC(:), Q(:,:)
@@ -139,7 +143,7 @@ subroutine EIGEN
 
     IF (NROOT > NEQ) STOP "*** ERROR *** eigenvalue is lager than NEQ."
     
-    ALLOCATE (RV(NEQ,NC),EIGV(NC),AR(NNC),BR(NNC))
+    ALLOCATE (RV(NEQ,NROOT),EIGV(NROOT),AR(NNC),BR(NNC))
     ALLOCATE (VEC(NC,NC),D(NC),RTOLV(NC),BUP(NC),BLO(NC))
     ALLOCATE (BUPC(NC),Q(NEQ,NC))
     
@@ -152,6 +156,44 @@ subroutine EIGEN
     ELSE
         WRITE(*,"(/,'NOT CALCULATE THE EIGENVALUES AND EIGENVECTORS.')") 
     END IF
+    
   
+    REWIND(IIN)
+    DO N=1,2
+        READ(IIN,'()')
+    END DO
+  
+    DO WHILE (N.NE.NUMNP)
+        READ (IIN,"(I5,<NDF>I5,3F10.0,I5)") N,(ID(I,N),I=1,NDF)
+    END DO 
+    
+    NEQ=0
+    DO N=1,NUMNP
+        DO I=1,NDF
+        IF (ID(I,N) .EQ. 0) THEN
+            NEQ=NEQ + 1
+            ID(I,N)=NEQ
+        ELSE
+            ID(I,N)=0
+        END IF
+        END DO
+    END DO
+
+    
+    DO II=1,NPAR(6)
+        DO N=1,NUMNP     
+            DO I=1,3
+                R(I)=0.0
+            END DO
+        
+            DO I=1,3
+                KK=ID(I,N)
+                IL=I
+                IF (KK.NE.0) R(IL)=RV(KK,II)
+            END DO
+            WRITE(10,'(3F16.8)')R     
+        END DO 
+    END DO
+ 
   return
 end subroutine EIGEN

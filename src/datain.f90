@@ -37,7 +37,7 @@ SUBROUTINE INPUT (ID,X,Y,Z,NUMNP,NEQ)
   N = 0
 
   DO WHILE (N.NE.NUMNP)
-     READ (IIN,"(I5,<NDF>I5,3F10.0,I5)") N,(ID(I,N),I=1,NDF),X(N),Y(N),Z(N)
+     READ (IIN,"(I5,<NDF>I5,3F10.0,I5)") N,(ID(I,N),I=1,NDF),X(N),Y(N),Z(N)        !gai le
   END DO
 
 

@@ -23,8 +23,8 @@ PROGRAM STAP90
 
 ! OPEN INPUT DATA FILE, RESULTS OUTPUT FILE AND TEMPORARY FILES
 
-!  CALL PREOPENFILES()                  ! 采用前处理的话就用这个函数不用下面那个，运行时只需要确定运行路径即可！
-  CALL OPENFILES()
+  CALL PREOPENFILES()                  ! 采用前处理的话就用这个函数不用下面那个，运行时只需要确定运行路径即可！
+  !CALL OPENFILES()
 
   NUMEST=0
   MAXEST=0
@@ -207,11 +207,13 @@ PROGRAM STAP90
 !       Calculation of stresses
         CALL STRESS (A(NP(11)))
         
-!       Calculation of EIGENVALUES and EIGENVECTORS
+!       Calculation of VALUES and EIGENVECTORS
         CALL EIGEN
-        CALL POSTPROCESSOR
+       CALL POSTPROCESSOR
+      
      END DO
-
+     
+     IF(NPAR(6).NE.0) CALL POSTEIGEN
      CALL SECOND (TIM(5))
   END IF
 
@@ -228,7 +230,7 @@ PROGRAM STAP90
      '     TIME FOR INPUT PHASE ',14(' .'),' =',F12.2,/,     &
      '     TIME FOR CALCULATION OF STIFFNESS MATRIX  . . . . =',F12.2, /,   &
      '     TIME FOR FACTORIZATION OF STIFFNESS MATRIX  . . . =',F12.2, /,   &
-     '     TIME FOR LOAD CASE SOLUTIONS ',10(' .'),' =',F12.2,//,   &
+     '     TIME FOR LOAD CASE SOLUTIONS ',  (' .'),' =',F12.2,//,   &
      '      T O T A L   S O L U T I O N   T I M E  . . . . . =',F12.2)") (TIM(I),I=1,4),TT
 
 
@@ -237,7 +239,7 @@ PROGRAM STAP90
      '     TIME FOR INPUT PHASE ',14(' .'),' =',F12.2,/,     &
      '     TIME FOR CALCULATION OF STIFFNESS MATRIX  . . . . =',F12.2, /,   &
      '     TIME FOR FACTORIZATION OF STIFFNESS MATRIX  . . . =',F12.2, /,   &
-     '     TIME FOR LOAD CASE SOLUTIONS ',10(' .'),' =',F12.2,//,   &
+     '     TIME FOR LOAD CASE SOLUTIONS ',(' .'),' =',F12.2,//,   &
      '      T O T A L   S O L U T I O N   T I M E  . . . . . =',F12.2)") (TIM(I),I=1,4),TT
   STOP
 
@@ -264,11 +266,11 @@ SUBROUTINE WRITED (DISP,ID,NEQ,NUMNP)
 ! .   To print displacements                                          .
 ! . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-  USE GLOBALS, ONLY : IOUT
+  USE GLOBALS, ONLY : IOUT,NDF
 
   IMPLICIT NONE
-  INTEGER :: NEQ,NUMNP,ID(3,NUMNP)
-  REAL(8) :: DISP(NEQ),D(3)
+  INTEGER :: NEQ,NUMNP,ID(NDF,NUMNP)
+  REAL(8) :: DISP(NEQ),D(NDF)
   INTEGER :: IC,II,I,KK,IL
 
 ! Print displacements
@@ -286,18 +288,18 @@ SUBROUTINE WRITED (DISP,ID,NEQ,NUMNP)
         IC=4
      END IF
 
-     DO I=1,3
+     DO I=1,NDF
         D(I)=0.
      END DO
 
-     DO I=1,3
+     DO I=1,NDF
         KK=ID(I,II)
         IL=I
         IF (KK.NE.0) D(IL)=DISP(KK)
      END DO
 
-     WRITE (IOUT,'(1X,I3,8X,3E18.6)') II,D
-     WRITE (10,'(3E18.6)') D
+     WRITE (IOUT,'(1X,I3,8X,<NDF>E18.6)') II,D
+     WRITE (10,'(<NDF>E18.6)') D
   END DO 
 
  

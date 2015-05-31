@@ -125,7 +125,7 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
                    15 X,'E',14X,'A',14X,'ROU')")
 
      DO I=1,NUMMAT
-        READ (IIN,'(I5,3F12.5)') N,E(N),PR(N),THICK(N)                      ! Read material information  
+        READ (IIN,'(I5,3F10.0)') N,E(N),PR(N),THICK(N)                      ! Read material information  
         WRITE (IOUT,"(I5,4X,E12.5,2X,E12.5,2X,E12.5)") N,E(N),PR(N),THICK(N)
      END DO
      
@@ -150,7 +150,7 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
         XYZ(6,N)=Y(P(3))
         XYZ(7,N)=X(P(4))     ! Coordinates of the element's fourth node
         XYZ(8,N)=Y(P(4))
-        MATP(N)=MTYPE  ! Material type
+        MATP(N)=MTYPE        ! Material type
         
         DO L=1,8
            LM(L,N)=0
@@ -186,7 +186,6 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
 
      DO N=1,NUME
         MTYPE=MATP(N)
-        THICK(MTYPE)=1.
         F=E(MTYPE)/(1.+PR(MTYPE))                                                      
         G=F*PR(MTYPE)/(1.-2.*PR(MTYPE))                                                 
         H=F + G 
@@ -211,7 +210,7 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
             THICK(MTYPE)=1.
         ELSE IF(ITYPE.eq.2) THEN          !平面应力
             F=E(MTYPE)/(1-PR(MTYPE)**2)
-            D(1,1)=F                                                          
+            D(1,1)=F           
             D(1,2)=F*PR(MTYPE)                                                          
             D(1,3)=0.                                                         
             D(2,1)=F*PR(MTYPE)                                                             
@@ -239,8 +238,8 @@ SUBROUTINE QUAD_1 (ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
         else if(ITYPE.eq.0)then                                                  !轴对称问题
             do i=1,2                                                      
                 do j=1,2
-                    CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
                     CALL Nmat(gp(i),gp(j),NL)
+                    CAll Bmat(gp(i),gp(j),XYZ(1,N),B,detJ)
                     r=2*pi*(NL(1,1)*XYZ(1,N)+NL(1,3)*XYZ(3,N)+NL(1,5)*XYZ(5,N)+NL(1,7)*XYZ(7,N))
                     S=S+r*WGT(i)*WGT(j)*matmul(matmul(transpose(B),D),B)*detJ
                     

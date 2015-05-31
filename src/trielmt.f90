@@ -208,14 +208,16 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
             D(4,4)=HH
             
 !           For plane stress analysis condense stress-stain matrix
-            DO I = 1,3
-                DD = D(I,4) / D(4,4)
-                DO J = I,3
-                    D(I,J) = D(I,J) - D(4,J) * DD
-                    D(J,I) = D(I,J)
-                END DO
-            END DO 
-
+            IF (ITYPE == 2) THEN
+                DO I = 1,3
+                    DD = D(I,4) / D(4,4)
+                    DO J = I,3
+                        D(I,J) = D(I,J) - D(4,J) * DD
+                        D(J,I) = D(I,J)
+                    END DO
+                END DO 
+            END IF
+            
 !           Calculate element stiffness
             S = 0.
             M = 0.
@@ -239,7 +241,7 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
                 call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
                 S = S + matmul(transpose(Be(1:3,1:6)),matmul(D(1:3,1:3),Be(1:3,1:6))) * detJ
 !               The mass matrix (NOTE: NOT HAVE THE DENSITY)
-                M = M + matmul(transpose(Ne),Ne) * detJ
+                M = M + matmul(transpose(Ne),Ne) * detJ * 1e3
             END IF
             
             CALL ADDBAN (DA(NP(3)),IA(NP(2)),S,LM(1,N),ND)
@@ -282,7 +284,7 @@ SUBROUTINE triangle(ID,X,Y,U,MHT,E,PR,THIC,LM,XY,MATP)
 !               evaluate derivative operator B and the Jacobian determinant detJ
                 call BNmat(xy(1,n), ri, si, Be, Ne, detJ, rr)
                 P = matmul(D,matmul(Be,UE))
-                write (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6)")N,ri,si,P(1),P(2),P(3),P(4)
+                write (IOUT,"(I5,5X,f6.3,2X,f6.3,4X,E13.6,4X,E13.6,4X,E13.6,4X,E13.6)")N,ri,si,P(1),P(2),P(3),P(4)
             ELSE
                 ri = (xy(1,n)+xy(3,n)+xy(5,n)) / 3
                 si = (xy(2,n)+xy(4,n)+xy(6,n)) / 3
@@ -306,8 +308,10 @@ subroutine BNmat (xy,ri,si,Be,Ne,detJ,r)
     real(8) :: xy(6), Be(4,6), Ne(2,6)
     real(8) :: ri, si
     
-    real(8) :: xx(3), yy(3), N(3)
+    real(8) :: xx(3), yy(3), xsi(3), N(3)
     real(8) :: detJ, r
+    
+    integer :: i
 
     xx(1) = xy(3) - xy(5)
     xx(2) = xy(5) - xy(1)
@@ -318,51 +322,35 @@ subroutine BNmat (xy,ri,si,Be,Ne,detJ,r)
     
     detJ = (xy(3)*xy(6)-xy(5)*xy(4) - xy(1)*xy(6)+xy(5)*xy(2) + xy(1)*xy(4)-xy(3)*xy(2))
     
-    N(1) = (xy(3)*xy(6) - xy(5)*xy(4) + yy(1)*ri - xx(1)*si) / detJ
-    N(2) = (xy(5)*xy(2) - xy(1)*xy(6) + yy(2)*ri - xx(2)*si) / detJ
-    N(3) = (xy(1)*xy(4) - xy(3)*xy(2) + yy(3)*ri - xx(3)*si) / detJ
+    xsi(1) = (xy(3)*xy(6) - xy(5)*xy(4) + yy(1)*ri - xx(1)*si) / detJ
+    xsi(2) = (xy(5)*xy(2) - xy(1)*xy(6) + yy(2)*ri - xx(2)*si) / detJ
+    xsi(3) = (xy(1)*xy(4) - xy(3)*xy(2) + yy(3)*ri - xx(3)*si) / detJ
+    
+    N(1) = xsi(1)
+    N(2) = xsi(2)
+    N(3) = xsi(3)
     
     Ne = 0
     
-    Ne(1,1) = N(1)
-    Ne(2,1) = 0
-    Ne(1,2) = 0
-    Ne(2,2) = N(1)
+    do i = 1,3
+        Ne(1,2*i-1) = N(i)
+        Ne(2,2*i-1) = 0
+        Ne(1,2*i  ) = 0
+        Ne(2,2*i  ) = N(i)
+    end do
     
-    Ne(1,3) = N(2)
-    Ne(2,3) = 0
-    Ne(1,4) = 0
-    Ne(2,4) = N(2)
-    
-    Ne(1,5) = N(3)
-    Ne(2,5) = 0
-    Ne(1,6) = 0
-    Ne(2,6) = N(3)
-    
-    r = N(1)*xy(1) + N(2)*xy(3) + N(3)*xy(5)
+    r = xsi(1)*xy(1) + xsi(2)*xy(3) + xsi(3)*xy(5)
     
     Be = 0
     
-    Be(1,1) = yy(1)
-    Be(3,1) = -xx(1)
-    Be(4,1) = N(1)/r * detJ
+    do i = 1,3
+        Be(1,2*i-1) =  yy(i)/detJ 
+        Be(3,2*i-1) = -xx(i)/detJ
+        Be(4,2*i-1) =  N(i)/r
     
-    Be(2,2) = -xx(1)
-    Be(3,2) = yy(1)
- 
-    Be(1,3) = yy(2)
-    Be(3,3) = -xx(2)
-    Be(4,3) = N(2)/r * detJ
-    
-    Be(2,4) = -xx(2)
-    Be(3,4) = yy(2)
-    
-    Be(1,5) = yy(3)
-    Be(3,5) = -xx(3)
-    Be(4,5) = N(3)/r * detJ
-    
-    Be(2,6) = -xx(3)
-    Be(3,6) = yy(3)
+        Be(2,2*i) = -xx(i)/detJ
+        Be(3,2*i) =  yy(i)/detJ
+    end do
     
     !Be = [yy(1),    0 , -xx(1), N(1)/r, &
     !        0 ,-xx(1),  yy(1),   0   , &
@@ -370,7 +358,6 @@ subroutine BNmat (xy,ri,si,Be,Ne,detJ,r)
     !        0 ,-xx(2),  yy(2),   0   , &
     !     yy(3),    0 , -xx(3), N(3)/r, &
     !        0 ,-xx(3),  yy(3),   0   ]
-    
-    Be = Be / detJ
+
     
 end subroutine BNmat

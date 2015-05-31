@@ -196,43 +196,6 @@ SUBROUTINE EAM (ID,X,Y,Z,U,MHT,E,AREA,INERTIAL,LM,XYZ,MATP)
 ! Stress calculations
   ELSE IF (IND .EQ. 3) THEN
 
-     IPRINT=0
-     DO N=1,NUME
-        IPRINT=IPRINT + 1
-        IF (IPRINT.GT.50) IPRINT=1
-        IF (IPRINT.EQ.1) WRITE (IOUT,"(//,' F O R C E S',//,'  NODE ',13X,   &
-                          'X-STRESS          Y-STRESS')")
-       MTYPE=MATP(N)
-        do L=1,2    
-            I=LM(3*L-2,N)
-            IF (I.GT.0) then
-                UE(3*L-2)=U(I)
-            else
-                UE(3*L-2)=0
-            end if       
-            
-            J=LM(3*L-1,N)
-            
-            if (J.GT.0) then
-                UE(3*L-1) = U(J)
-            else
-                UE(3*L-1) = 0
-            end if
-            
-            J=LM(3*L,N)
-            
-            if (J.GT.0) then
-                UE(3*L) = U(J)
-            else
-                UE(3*L) = 0
-            end if
-        end do
-        
-        !WRITE (IOUT,"(E13.6)")UE
-
-        
-        WRITE (IOUT,"(1X,I5,11X,E13.6,4X,E13.6)") N,P,STR
-     END DO
 
   ELSE 
      STOP "*** ERROR *** Invalid IND value."

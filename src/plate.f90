@@ -40,7 +40,7 @@ SUBROUTINE plate
 
   MIDEST=NLAST - NFIRST
 
-  CALL hell(IA(NP(1)),DA(NP(2)),DA(NP(3)),DA(NP(4)),DA(NP(4)),IA(NP(5)),   &
+  CALL late(IA(NP(1)),DA(NP(2)),DA(NP(3)),DA(NP(4)),DA(NP(4)),IA(NP(5)),   &
        A(N101),A(N102),A(N106),A(N103),A(N104),A(N105))
 
   RETURN
@@ -104,7 +104,7 @@ SUBROUTINE late(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
                    15 X,'E',14X,'A',14X,'ROU')")
 
      DO I=1,NUMMAT
-        READ (IIN,'(I5,3F12.5)') N,E(N),PR(N),THICK(N)                      ! Read material information  
+        READ (IIN,'(I5,3F10.0)') N,E(N),PR(N),THICK(N)                      ! Read material information  
         WRITE (IOUT,"(I5,4X,E12.5,2X,E12.5,2X,E12.5)") N,E(N),PR(N),THICK(N)
      END DO
 
@@ -135,11 +135,11 @@ SUBROUTINE late(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
            LM(L,N)=0
         END DO
 
-        DO L=1,NDF
-           LM(L,N)=ID(L,P1)     ! Connectivity matrix
-           LM(L+NDF,N)=ID(L,P2) 
-           LM(L+2*NDF,N)=ID(L,P3) 
-           LM(L+3*NDF,N)=ID(L,P4)
+        DO L=1,NDF-2
+           LM(L,N)=ID(L+2,P1)     ! Connectivity matrix
+           LM(L+NDF-2,N)=ID(L+2,P2) 
+           LM(L+2*NDF-4,N)=ID(L+2,P3) 
+           LM(L+3*NDF-6,N)=ID(L+2,P4)
         END DO
 
      
@@ -147,7 +147,7 @@ SUBROUTINE late(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
         CALL COLHT (MHT,ND,LM(1,N))   
 
         WRITE (IOUT,"(I5,6X,I5,4X,I5,4X,I5,4X,I5,7X,I5)") N,P1,P2,P3,P4,MTYPE
-
+        WRITE (10,"(I5,4X,I5,4X,I5,4X,I5)") P1,P2,P3,P4
      END DO
 
      RETURN
@@ -205,7 +205,7 @@ SUBROUTINE late(ID,X,Y,Z,U,MHT,E,PR,THICK,LM,XYZ,MATP)
         IF (IPRINT.GT.50) IPRINT=1
         IF (IPRINT.EQ.1) WRITE (IOUT,"(//,' S T R E S S  C A L C U L A T I O N S  F O R  ',  &
                                            'E L E M E N T  G R O U P',I4,//,   &
-                                           '  ELEMENT',5X,'GAUSS POINT',5X,'StressXX',5X,'StressYY',5X,'StressXY',/,&
+                                           '  ELEMENT',5X,'MX',5X,'MY',/,&
                                           '  NUMBER')") NG
         MTYPE=MATP(N)
         DO L=1,4    
@@ -335,8 +335,8 @@ subroutine BSmat_plate(eta,psi,XY,BS,detJ)
         end do
 
         do I=1,2
-            BS(1,K2-2)=BS(1,K2-2)+JINV(1,I)*GN(I,K)
-            BS(2,K2-2)=BS(2,K2-2)+JINV(2,I)*GN(I,K)
+            BS(1,K2-2)=BS(1,K2-2)+JINV(2,I)*GN(I,K)
+            BS(2,K2-2)=BS(2,K2-2)+JINV(1,I)*GN(I,K)
         end do
         BS(1,K2-1)  =-N(K)
         BS(2,K2)    = N(K)
